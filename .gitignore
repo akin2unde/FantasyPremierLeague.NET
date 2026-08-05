@@ -1,0 +1,13 @@
+bin/
+obj/
+.vs/
+playwright.ps1
+playwright.sh
+.DS_Store
+TestResults/
+.vscode/
+.idea/
+*.user
+*.suo
+TestResults/
+artifacts/
