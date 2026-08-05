@@ -1,109 +1,111 @@
 # FantasyPremierLeague.NET
 
-> A modern, strongly typed **.NET 10** SDK for the Fantasy Premier League API with optional Playwright authentication, automatic token reuse, and database-agnostic manager persistence.
-
-![.NET](https://img.shields.io/badge/.NET-10-blue)
-![License](https://img.shields.io/badge/license-MIT-green)
-![Status](https://img.shields.io/badge/status-Preview-orange)
-![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20Linux%20%7C%20macOS-lightgrey)
-
-[![Build and Test](https://github.com/akin2unde/FantasyPremierLeague.NET/actions/workflows/ci.yml/badge.svg)](https://github.com/akin2unde/FantasyPremierLeague.NET/actions/workflows/ci.yml)
-
-[![codecov](https://codecov.io/gh/akin2unde/FantasyPremierLeague.NET/graph/badge.svg)](https://codecov.io/gh/akin2unde/FantasyPremierLeague.NET)
-
+[![Build](https://github.com/akin2unde/FantasyPremierLeague.NET/actions/workflows/ci.yml/badge.svg)](https://github.com/akin2unde/FantasyPremierLeague.NET/actions/workflows/ci.yml)
 [![NuGet](https://img.shields.io/nuget/v/FantasyPremierLeague.NET.svg)](https://www.nuget.org/packages/FantasyPremierLeague.NET)
+[![Downloads](https://img.shields.io/nuget/dt/FantasyPremierLeague.NET.svg)](https://www.nuget.org/packages/FantasyPremierLeague.NET)
+[![Coverage](https://codecov.io/gh/akin2unde/FantasyPremierLeague.NET/graph/badge.svg)](https://codecov.io/gh/akin2unde/FantasyPremierLeague.NET)
+[![License](https://img.shields.io/github/license/akin2unde/FantasyPremierLeague.NET)](LICENSE)
 
-[![NuGet Downloads](https://img.shields.io/nuget/dt/FantasyPremierLeague.NET.svg)](https://www.nuget.org/packages/FantasyPremierLeague.NET)
+A modern, strongly typed **.NET 10 SDK** for interacting with the Fantasy Premier League API.
 
-[![Playwright NuGet](https://img.shields.io/nuget/v/FantasyPremierLeague.NET.Playwright.svg)](https://www.nuget.org/packages/FantasyPremierLeague.NET.Playwright)
-
-[![License](https://img.shields.io/github/license/akin2unde/FantasyPremierLeague.NET.svg)](LICENSE)
+FantasyPremierLeague.NET provides a clean, dependency injection-friendly SDK that supports both public and authenticated Fantasy Premier League endpoints while allowing developers to store manager information in any database of their choice.
 
 ---
 
-## Overview
+# Why FantasyPremierLeague.NET?
 
-FantasyPremierLeague.NET provides a clean, strongly typed and extensible SDK for interacting with the Fantasy Premier League platform from .NET applications.
+Most unofficial Fantasy Premier League libraries focus only on making HTTP requests.
 
-Unlike most unofficial wrappers, this SDK has been designed around modern .NET architecture and dependency injection. Authentication, persistence and HTTP communication are separated into reusable components, allowing developers to integrate the SDK into ASP.NET Core applications with minimal configuration.
+FantasyPremierLeague.NET was designed to feel like a modern .NET SDK by providing:
 
-The SDK automatically reuses previously authenticated sessions, reducing unnecessary browser automation while allowing developers to store manager information in any database of their choice.
+* Strongly typed models
+* Clean Dependency Injection
+* Automatic authentication
+* Automatic token reuse
+* Automatic token refresh
+* Pluggable persistence
+* Extensible authentication providers
+* Clean architecture
+* XML documentation
+* ASP.NET Core integration
 
 ---
 
 # Features
 
-* Strongly typed .NET API
-* Built for **.NET 10**
-* Native Dependency Injection support
-* Optional Playwright authentication
-* Automatic access token reuse
-* Automatic re-authentication when tokens expire
+* .NET 10
+* Fully asynchronous API
+* Strongly typed responses
+* Built-in Dependency Injection
+* Playwright authentication provider
+* Automatic token reuse
+* Automatic re-authentication
 * Database-agnostic persistence
-* Public and authenticated API endpoints
-* Modular architecture
 * XML documentation
+* Modular architecture
 * ASP.NET Core sample application
-* Designed for NuGet distribution
+* Unit tests
+* Open-source
 
 ---
 
-# Solution Structure
+# Installation
 
-```text
-FantasyPremierLeague.NET
-│
-├── src
-│   ├── FantasyPremierLeague
-│   │
-│   └── FantasyPremierLeague.Playwright
-│
-├── samples
-│   └── FantasyPremierLeague.SampleApi
-│
-├── tests
-│
-└── README.md
+## Core SDK
+
+```bash
+dotnet add package FantasyPremierLeague.NET
 ```
 
-## Projects
+## Playwright Authentication
 
-### FantasyPremierLeague
-
-The core SDK.
-
-Contains:
-
-* HTTP infrastructure
-* Feature clients
-* Models
-* Authentication abstraction
-* Manager persistence abstraction
-* Dependency Injection extensions
-
-This project has **no Playwright dependency**.
+```bash
+dotnet add package FantasyPremierLeague.NET.Playwright
+```
 
 ---
 
-### FantasyPremierLeague.Playwright
+# Quick Start
 
-Provides browser-based authentication using Microsoft Playwright.
+Register the SDK
 
-This package is completely optional.
+```csharp
+builder.Services.AddFantasyPremierLeague(options =>
+{
+    options.BaseAddress = new Uri("https://fantasy.premierleague.com/api/");
+});
+```
 
-Install it only if your application requires authenticated Fantasy Premier League operations.
+Enable Playwright authentication
 
----
+```csharp
+builder.Services.AddFantasyPremierLeaguePlaywright(options =>
+{
+    options.Headless = true;
+});
+```
 
-### FantasyPremierLeague.SampleApi
+Register your manager persistence
 
-A complete ASP.NET Core sample demonstrating:
+```csharp
+builder.Services.AddSingleton<
+    IFplManagerStore,
+    MongoFplManagerStore>();
+```
 
-* Dependency Injection
-* Authentication
-* Manager persistence
-* Service layer
-* Controller layer
+Inject the SDK
+
+```csharp
+public class FplService
+{
+    private readonly FplClient _client;
+
+    public FplService(FplClient client)
+    {
+        _client = client;
+    }
+}
+```
 
 ---
 
@@ -113,141 +115,121 @@ A complete ASP.NET Core sample demonstrating:
 Application
       │
       ▼
-FplClient
+ FplClient
       │
-      ├── Players
-      ├── Fixtures
-      ├── Managers
-      ├── Leagues
-      └── Team
-             │
-             ▼
-      FplHttpClient
-             │
-             ▼
-IFplAuthenticationManager
-             │
-             ▼
-IFplManagerStore
-             │
-             ▼
-MongoDB / SQL Server / Redis / Cassandra / Any Database
+      ├──────────────┐
+      │              │
+ Players        Fixtures
+ Managers       Leagues
+ Team
+      │
+      ▼
+ FplHttpClient
+      │
+      ▼
+ Authentication Manager
+      │
+      ▼
+ Manager Store
+      │
+      ▼
+ MongoDB / SQL Server / Redis /
+ PostgreSQL / Cassandra / etc.
 ```
 
 ---
 
 # Authentication Flow
 
-The SDK authenticates only when necessary.
+The SDK authenticates only when required.
 
 ```text
 Login Requested
-        │
-        ▼
-Check IFplManagerStore
-        │
-        ├───────────────┐
-        │               │
- Manager Found?        No
-        │               │
-       Yes              ▼
-        │         Authenticate
-        │               │
-Token Still Valid?      │
-        │               │
-   Yes ─┘               ▼
-        │        Save Manager
-        ▼               │
-Reuse Stored Token ◄────┘
+       │
+       ▼
+Check Manager Store
+       │
+       ├───────────────┐
+       │               │
+Found Manager?        No
+       │               │
+      Yes              ▼
+       │         Authenticate
+       │               │
+Token Valid?           │
+       │               │
+ Yes ──┘               ▼
+       │         Save Manager
+       ▼               │
+Reuse Token ◄──────────┘
 ```
 
-Every authenticated manager is stored as an `FplManagerRecord` containing:
+Every authenticated manager is stored as an `FplManagerRecord`.
+
+The SDK stores:
 
 * Email
-* Entry ID
+* Entry Id
 * Access Token
-* Token Expiry
+* Expiry Date
 * Manager Profile
 * Entry Information
 
-This allows applications to avoid repeated browser logins until the stored token expires.
-
----
-
-# Getting Started
-
-## Register the SDK
-
-```csharp
-builder.Services.AddFantasyPremierLeague(options =>
-{
-    options.RefreshBeforeExpiry = TimeSpan.FromMinutes(2);
-});
-```
-
-## Enable Playwright Authentication
-
-```csharp
-builder.Services.AddFantasyPremierLeaguePlaywright(options =>
-{
-    options.Headless = true;
-});
-```
-
-## Register Your Manager Store
-
-```csharp
-builder.Services.AddSingleton<
-    IFplManagerStore,
-    MyMongoManagerStore>();
-```
-
-Replace `MyMongoManagerStore` with your own implementation backed by MongoDB, SQL Server, Redis, PostgreSQL, Cassandra, or any other persistence technology.
+This allows the SDK to avoid unnecessary browser authentication.
 
 ---
 
 # Example
 
+Authenticate a manager
+
 ```csharp
-public sealed class FplManagerService
-{
-    private readonly FplClient _fpl;
-
-    public FplManagerService(FplClient fpl)
-    {
-        _fpl = fpl;
-    }
-
-    public Task<FplManagerRecord> LoginAsync(
-        string email,
-        string password,
-        CancellationToken cancellationToken)
-    {
-        return _fpl.LoginAsync(
-            email,
-            password,
-            cancellationToken);
-    }
-}
+await client.LoginAsync(
+    "user@example.com",
+    "password");
 ```
 
-The SDK will:
+Retrieve bootstrap information
 
-1. Look up the manager by email.
-2. Reuse the stored token if it is still valid.
-3. Authenticate only when necessary.
-4. Update the stored manager record.
-5. Use the stored token for authenticated requests.
+```csharp
+var bootstrap =
+    await client.Players.GetBootstrapAsync();
+```
+
+Retrieve player information
+
+```csharp
+var player =
+    await client.Players.GetPlayerSummaryAsync(328);
+```
+
+Retrieve fixtures
+
+```csharp
+var fixtures =
+    await client.Fixtures.GetFixturesAsync();
+```
+
+Retrieve a manager
+
+```csharp
+var manager =
+    await client.Managers.GetEntryAsync(123456);
+```
 
 ---
 
-# Persistence
+# Manager Persistence
 
-The SDK never assumes how data should be stored.
+The SDK never dictates how your application stores data.
 
-Implement the `IFplManagerStore` interface using any persistence technology.
+Simply implement:
 
-Examples include:
+```csharp
+public interface IFplManagerStore
+```
+
+The same SDK works with:
 
 * MongoDB
 * SQL Server
@@ -257,66 +239,167 @@ Examples include:
 * Redis
 * Cassandra
 * Cosmos DB
+* In-Memory
+
+---
+
+# Projects
+
+```text
+FantasyPremierLeague.NET
+│
+├── src
+│   ├── FantasyPremierLeague
+│   └── FantasyPremierLeague.Playwright
+│
+├── samples
+│   └── FantasyPremierLeague.SampleApi
+│
+├── tests
+│
+└── docs
+```
+
+---
+
+# Project Structure
+
+## FantasyPremierLeague
+
+Contains
+
+* Feature Clients
+* Models
+* HTTP Pipeline
+* Authentication Contracts
+* Manager Store Contracts
+* Dependency Injection
+
+This package has **no Playwright dependency**.
+
+---
+
+## FantasyPremierLeague.Playwright
+
+Contains
+
+* Playwright Login Provider
+* Browser Authentication
+* Token Extraction
+* Authentication Registration
+
+This package is optional.
+
+---
+
+## Sample API
+
+Contains a working ASP.NET Core example demonstrating
+
+* Dependency Injection
+* Authentication
+* Manager Persistence
+* Controllers
+* Services
+
+---
+
+# Current Endpoints
+
+Public
+
+* Bootstrap
+* Players
+* Fixtures
+* Leagues
+
+Authenticated
+
+* Login
+* Team
+* Manager
+* Transfers *(Work in Progress)*
 
 ---
 
 # Roadmap
 
-Current version:
+## v0.1
 
-**v0.0.1 (Preview)**
+* Remaining Public Endpoints
+* Better Exception Handling
+* Improved XML Documentation
 
-Planned improvements include:
+## v0.2
 
-* Additional Fantasy Premier League endpoints
-* Improved transfer APIs
-* League administration
-* Automatic retry policies
-* Improved caching
-* Source Generator support
-* Native AOT compatibility
-* NuGet publication
-* Additional authentication providers
-* Comprehensive unit and integration tests
+* MongoDB Package
+* Redis Package
+* SQL Server Package
+
+## v0.3
+
+* Polly Retry Policies
+* Caching
+* Better Logging
+
+## v1.0
+
+* Stable Public API
+* Complete Endpoint Coverage
+* NuGet Stable Release
+
+---
+
+# Documentation
+
+Additional documentation is available inside the repository.
+
+* CHANGELOG.md
+* ROADMAP.md
+* CONTRIBUTING.md
 
 ---
 
 # Contributing
 
-Contributions, suggestions and issue reports are welcome.
+Contributions are welcome.
 
-If you would like to contribute:
+If you would like to contribute
 
-1. Fork the repository.
-2. Create a feature branch.
-3. Submit a pull request.
+1. Fork the repository
+2. Create a feature branch
+3. Submit a Pull Request
 
-Please ensure new features include tests and appropriate documentation.
+Please include tests and documentation with new features.
 
 ---
 
 # Disclaimer
 
-FantasyPremierLeague.NET is an unofficial community SDK.
+FantasyPremierLeague.NET is an unofficial SDK.
 
-It is not affiliated with, endorsed by, or sponsored by the Fantasy Premier League or the Premier League.
-
-Users are responsible for ensuring their usage complies with the Fantasy Premier League terms of service.
+It is not affiliated with, endorsed by or sponsored by the Fantasy Premier League or the Premier League.
 
 ---
 
 # License
 
-This project is licensed under the MIT License.
+MIT License
 
-See the `LICENSE` file for details.
+See the LICENSE file for details.
 
 ---
 
-## Author
+# Author
 
 **Akintunde Morakinyo**
 
-Senior Software Engineer | .NET | C# | Angular | React Native | TypeScript
+Senior Software Engineer
 
-Building modern, reusable developer tools and scalable enterprise software.
+* .NET
+* C#
+* Angular
+* React Native
+* TypeScript
+
+Building reusable software components and modern developer tools for the .NET ecosystem.
