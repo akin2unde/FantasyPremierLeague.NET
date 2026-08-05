@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <PackageId>FantasyPremierLeague.NET</PackageId>
-    <Version>0.2.0</Version>
+    <Version>0.1.0</Version>
     <Authors>Akintunde Morakinyo</Authors>
     <Description>A modern, strongly typed .NET 10 SDK for Fantasy Premier League.</Description>
     <PackageTags>fantasy-premier-league;fpl;dotnet;sdk</PackageTags>
