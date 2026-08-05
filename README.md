@@ -7,6 +7,18 @@
 ![Status](https://img.shields.io/badge/status-Preview-orange)
 ![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20Linux%20%7C%20macOS-lightgrey)
 
+[![Build and Test](https://github.com/akin2unde/FantasyPremierLeague.NET/actions/workflows/ci.yml/badge.svg)](https://github.com/akin2unde/FantasyPremierLeague.NET/actions/workflows/ci.yml)
+
+[![codecov](https://codecov.io/gh/akin2unde/FantasyPremierLeague.NET/graph/badge.svg)](https://codecov.io/gh/akin2unde/FantasyPremierLeague.NET)
+
+[![NuGet](https://img.shields.io/nuget/v/FantasyPremierLeague.NET.svg)](https://www.nuget.org/packages/FantasyPremierLeague.NET)
+
+[![NuGet Downloads](https://img.shields.io/nuget/dt/FantasyPremierLeague.NET.svg)](https://www.nuget.org/packages/FantasyPremierLeague.NET)
+
+[![Playwright NuGet](https://img.shields.io/nuget/v/FantasyPremierLeague.NET.Playwright.svg)](https://www.nuget.org/packages/FantasyPremierLeague.NET.Playwright)
+
+[![License](https://img.shields.io/github/license/akin2unde/FantasyPremierLeague.NET.svg)](LICENSE)
+
 ---
 
 ## Overview
