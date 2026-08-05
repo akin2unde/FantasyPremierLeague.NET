@@ -1,16 +1,82 @@
 <Project Sdk="Microsoft.NET.Sdk">
+
   <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+
     <PackageId>FantasyPremierLeague.NET.Playwright</PackageId>
-    <Version>0.2.0</Version>
+    <Version>0.0.1</Version>
+
     <Authors>Akintunde Morakinyo</Authors>
-    <Description>Playwright authentication provider for FantasyPremierLeague.NET.</Description>
-    <RepositoryUrl>https://github.com/akin2unde/FantasyPremierLeague.NET</RepositoryUrl>
+    <Company>Akintunde Morakinyo</Company>
+
+    <Description>
+      Playwright-based authentication provider for FantasyPremierLeague.NET.
+    </Description>
+
+    <PackageTags>
+      fantasy-premier-league;fpl;playwright;authentication;dotnet;csharp
+    </PackageTags>
+
+    <PackageProjectUrl>
+      https://github.com/akin2unde/FantasyPremierLeague.NET
+    </PackageProjectUrl>
+
+    <RepositoryUrl>
+      https://github.com/akin2unde/FantasyPremierLeague.NET
+    </RepositoryUrl>
+
+    <RepositoryType>git</RepositoryType>
+
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
+
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <EmbedUntrackedSources>true</EmbedUntrackedSources>
+
+    <ContinuousIntegrationBuild
+      Condition="'$(CI)' == 'true'">
+      true
+    </ContinuousIntegrationBuild>
+
+    <Deterministic>true</Deterministic>
+
+    <IsPackable>true</IsPackable>
+
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
-  <ItemGroup><ProjectReference Include="../FantasyPremierLeague/FantasyPremierLeague.csproj" /></ItemGroup>
+
   <ItemGroup>
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.0" />
-    <PackageReference Include="Microsoft.Extensions.Options" Version="10.0.0" />
-    <PackageReference Include="Microsoft.Playwright" Version="1.61.0" />
+    <None
+      Include="..\..\README.md"
+      Pack="true"
+      PackagePath="\" />
   </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference
+      Include="..\FantasyPremierLeague\FantasyPremierLeague.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference
+      Include="Microsoft.Playwright"
+      Version="1.61.0" />
+
+    <PackageReference
+      Include="Microsoft.Extensions.DependencyInjection.Abstractions"
+      Version="10.0.0" />
+
+    <PackageReference
+      Include="Microsoft.Extensions.Options"
+      Version="10.0.0" />
+  </ItemGroup>
+
 </Project>

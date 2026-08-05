@@ -1,12 +1,101 @@
-name: ci
-on: [push, pull_request]
+name: Build and Test
+
+on:
+  push:
+    branches:
+      - main
+      - dev
+
+  pull_request:
+    branches:
+      - main
+      - dev
+
+permissions:
+  contents: read
+  id-token: write
+
+env:
+  DOTNET_NOLOGO: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: true
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
+
 jobs:
-  build:
+  build-test:
+    name: Build, Test and Pack
     runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-dotnet@v4
-        with: { dotnet-version: '10.0.x' }
-      - run: dotnet restore FantasyPremierLeague.NET.sln
-      - run: dotnet build FantasyPremierLeague.NET.sln --configuration Release --no-restore
-      - run: dotnet test FantasyPremierLeague.NET.sln --configuration Release --no-build
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Set up .NET 10
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "10.0.x"
+
+      - name: Display .NET information
+        run: dotnet --info
+
+      - name: Restore dependencies
+        run: dotnet restore FantasyPremierLeague.NET.sln
+
+      - name: Build solution
+        run: >
+          dotnet build
+          FantasyPremierLeague.NET.sln
+          --configuration Release
+          --no-restore
+
+      - name: Run tests with coverage
+        run: >
+          dotnet test
+          FantasyPremierLeague.NET.sln
+          --configuration Release
+          --no-build
+          --collect:"XPlat Code Coverage"
+          --results-directory ./TestResults
+          --logger "trx;LogFileName=test-results.trx"
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v5
+        with:
+          use_oidc: true
+          directory: ./TestResults
+          flags: unittests
+          name: FantasyPremierLeague.NET
+          fail_ci_if_error: true
+          verbose: true
+
+      - name: Pack core NuGet package
+        run: >
+          dotnet pack
+          src/FantasyPremierLeague/FantasyPremierLeague.csproj
+          --configuration Release
+          --no-build
+          --output ./artifacts
+
+      - name: Pack Playwright NuGet package
+        run: >
+          dotnet pack
+          src/FantasyPremierLeague.Playwright/FantasyPremierLeague.Playwright.csproj
+          --configuration Release
+          --no-build
+          --output ./artifacts
+
+      - name: Upload NuGet packages
+        uses: actions/upload-artifact@v4
+        with:
+          name: nuget-packages
+          path: |
+            artifacts/*.nupkg
+            artifacts/*.snupkg
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: |
+            TestResults/**/*.trx
+            TestResults/**/coverage.cobertura.xml
