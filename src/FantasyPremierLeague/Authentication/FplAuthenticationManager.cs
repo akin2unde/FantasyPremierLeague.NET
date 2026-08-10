@@ -13,12 +13,16 @@ internal sealed class FplAuthenticationManager : IFplAuthenticationManager
     /// <summary>
     /// Provides the member member.
     /// </summary>
-    public FplManagerRecord? CurrentManager { get; private set; }
+    public FplManagerRecord? CurrentManager { get; set; }
     /// <summary>
     /// Describes the FplAuthenticationManager member.
     /// </summary>
     public FplAuthenticationManager(IFplLoginProvider loginProvider, IFplManagerStore managerStore, IOptions<FplOptions> options)
-    { _loginProvider = loginProvider; _managerStore = managerStore; _options = options.Value; }
+    {
+        _loginProvider = loginProvider;
+        _managerStore = managerStore;
+        _options = options.Value;
+    }
     /// <summary>
     /// Describes the LoginAsync member.
     /// </summary>
@@ -28,16 +32,23 @@ internal sealed class FplAuthenticationManager : IFplAuthenticationManager
         email = email.Trim().ToLowerInvariant(); await _loginLock.WaitAsync(cancellationToken);
         try
         {
-            var saved = await _managerStore.GetByEmailAsync(email, cancellationToken);
+            var saved = CurrentManager ?? await _managerStore.GetByEmailAsync(email, cancellationToken);
             if (!forceRefresh && saved is not null && saved.HasUsableToken(_options.RefreshBeforeExpiry))
             {
-                CurrentManager = saved; _currentPassword = password; return saved;
+                CurrentManager ??= saved;
+                _currentPassword = password;
+                return saved;
             }
             var session = await _loginProvider.LoginAsync(email, password, cancellationToken);
             if (string.IsNullOrWhiteSpace(session.AccessToken)) throw new FplAuthenticationException("The login provider returned an empty access token.");
             var record = saved ?? new FplManagerRecord { Email = email, AccessToken = session.AccessToken };
-            record.AccessToken = session.AccessToken; record.TokenExpiresAt = session.ExpiresAt; record.RefreshToken = session.RefreshToken; record.UpdatedAt = DateTimeOffset.UtcNow;
-            await _managerStore.SaveAsync(record, cancellationToken); CurrentManager = record; _currentPassword = password; return record;
+            record.AccessToken = session.AccessToken;
+            record.TokenExpiresAt = session.ExpiresAt;
+            record.RefreshToken = session.RefreshToken;
+            record.UpdatedAt = DateTimeOffset.UtcNow;
+            await _managerStore.SaveAsync(record, cancellationToken);
+            CurrentManager = record; _currentPassword = password;
+            return record;
         }
         finally { _loginLock.Release(); }
     }

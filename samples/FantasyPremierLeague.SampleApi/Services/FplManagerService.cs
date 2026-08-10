@@ -1,4 +1,5 @@
 using FantasyPremierLeague.Managers;
+using FantasyPremierLeague.Models.Bootstrap;
 
 namespace FantasyPremierLeague.SampleApi.Services;
 
@@ -47,4 +48,11 @@ public sealed class FplManagerService : IFplManagerService
         int entryId,
         CancellationToken cancellationToken = default) =>
         _managerStore.GetByEntryIdAsync(entryId, cancellationToken);
+
+    /// <inheritdoc />
+    public Task<FplBootstrapStatic> GetBoostrapAsync(
+        CancellationToken cancellationToken = default) =>
+        _fplClient.Boostrap.GetDataAsync(cancellationToken);
+
+
 }

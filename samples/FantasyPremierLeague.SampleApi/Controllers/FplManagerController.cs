@@ -50,4 +50,15 @@ public sealed class FplManagerController : ControllerBase
         var manager = await _service.GetByEntryIdAsync(entryId, cancellationToken);
         return manager is null ? NotFound() : Ok(manager);
     }
+
+    /// <summary>
+    /// Gets static boostrap data.
+    /// </summary>
+    [HttpGet("GetBoostrapData")]
+    public async Task<IActionResult> GetBoostrapData(
+        CancellationToken cancellationToken)
+    {
+        var manager = await _service.GetBoostrapAsync(cancellationToken);
+        return manager is null ? NotFound() : Ok(manager);
+    }
 }
