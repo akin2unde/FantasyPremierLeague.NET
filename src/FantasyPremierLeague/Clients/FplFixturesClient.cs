@@ -20,10 +20,27 @@ public sealed class FplFixturesClient
     /// Provides the GetAllAsync member.
     /// </summary>
 
-    public Task<List<FplFixture>> GetAllAsync(int? gameweek = null, CancellationToken cancellationToken = default)
+    public Task<List<FplFixture>> GetAllAsync(CancellationToken cancellationToken = default)
+    {
+        return _http.GetPublicAsync<List<FplFixture>>(FplEndpoints.Fixtures, cancellationToken);
+    }
+    /// <summary>
+    /// Provides the GetByGWAsync member.
+    /// </summary>
+
+    public Task<List<FplFixture>> GetByGWAsync(int gameweek, CancellationToken cancellationToken = default)
     {
         if (gameweek is <= 0) throw new ArgumentOutOfRangeException(nameof(gameweek));
-        var path = gameweek is null ? FplEndpoints.Fixtures : string.Format(FplEndpoints.FixturesByEvent, gameweek);
+        var path = string.Format(FplEndpoints.FixturesByEvent, gameweek);
         return _http.GetPublicAsync<List<FplFixture>>(path, cancellationToken);
+    }
+    /// <summary>
+    /// Provides the GetByIdAsync member.
+    /// </summary>
+
+    public async Task<FplFixture?> GetByIdAsync(int id, CancellationToken cancellationToken = default)
+    {
+        var all = await GetAllAsync(cancellationToken);
+        return all.FirstOrDefault(_ => _.Id == id);
     }
 }
