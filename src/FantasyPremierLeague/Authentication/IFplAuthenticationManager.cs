@@ -6,9 +6,9 @@ namespace FantasyPremierLeague.Authentication;
 public interface IFplAuthenticationManager
 {
     /// <summary>
-    /// Gets current manager
+    /// Gets and Sets current manager
     /// </summary>
-    FplManagerRecord? CurrentManager { get; }
+    FplManagerRecord? CurrentManager { get; set; }
     /// <summary>
     /// Provides the LoginAsync member.
     /// </summary>

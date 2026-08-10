@@ -1,4 +1,5 @@
 using FantasyPremierLeague.Managers;
+using FantasyPremierLeague.Models.Bootstrap;
 
 namespace FantasyPremierLeague.SampleApi.Services;
 
@@ -21,5 +22,11 @@ public interface IFplManagerService
     /// </summary>
     Task<FplManagerRecord?> GetByEntryIdAsync(
         int entryId,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Gets boosrap static file.
+    /// </summary>
+    Task<FplBootstrapStatic> GetBoostrapAsync(
         CancellationToken cancellationToken = default);
 }

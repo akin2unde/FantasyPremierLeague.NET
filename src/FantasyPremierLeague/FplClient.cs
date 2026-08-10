@@ -10,7 +10,13 @@ namespace FantasyPremierLeague;
 public sealed class FplClient
 {
     private readonly IFplAuthenticationManager _authenticationManager;
-
+    /// <summary>
+    /// Use this to set CurrentManager on AuthenticationManager.
+    /// </summary>
+    public void SetFoundRecord(FplManagerRecord fplManagerRecord)
+    {
+        _authenticationManager.CurrentManager = fplManagerRecord;
+    }
     /// <summary>
     /// Initializes a new instance of the <see cref="FplClient"/> class.
     /// </summary>
@@ -20,7 +26,10 @@ public sealed class FplClient
         FplFixturesClient fixtures,
         FplManagersClient managers,
         FplLeaguesClient leagues,
-        FplTeamClient team)
+        FplTeamClient team,
+        FplBoostrapClient fplBoostrap
+
+        )
     {
         _authenticationManager =
             authenticationManager ??
@@ -45,6 +54,9 @@ public sealed class FplClient
         Team =
             team ??
             throw new ArgumentNullException(nameof(team));
+        Boostrap =
+       fplBoostrap ??
+       throw new ArgumentNullException(nameof(fplBoostrap));
     }
 
     /// <summary>
@@ -71,6 +83,11 @@ public sealed class FplClient
     /// Gets authenticated team operations.
     /// </summary>
     public FplTeamClient Team { get; }
+
+    /// <summary>
+    /// Gets boostrap static data.
+    /// </summary>
+    public FplBoostrapClient Boostrap { get; }
 
     /// <summary>
     /// Logs in a manager or reuses a valid stored token.

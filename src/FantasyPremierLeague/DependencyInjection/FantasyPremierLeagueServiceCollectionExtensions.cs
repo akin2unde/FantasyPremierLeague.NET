@@ -59,7 +59,7 @@ public static class FantasyPremierLeagueServiceCollectionExtensions
                 httpClientFactory.CreateClient("FantasyPremierLeague"),
                 authenticationManager);
         });
-
+        services.AddScoped<FplBoostrapClient>();
         services.AddScoped<FplPlayersClient>();
         services.AddScoped<FplFixturesClient>();
         services.AddScoped<FplManagersClient>();
