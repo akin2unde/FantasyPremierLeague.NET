@@ -59,7 +59,8 @@ internal sealed class FplAuthenticationManager : IFplAuthenticationManager
     public async Task<FplManagerRecord> LoginAsync(string email, string password, bool forceRefresh, CancellationToken cancellationToken)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(email); ArgumentException.ThrowIfNullOrWhiteSpace(password);
-        email = email.Trim().ToLowerInvariant(); await _loginLock.WaitAsync(cancellationToken);
+        email = email.Trim().ToLowerInvariant();
+        await _loginLock.WaitAsync(cancellationToken);
         try
         {
             var saved = CurrentManager ?? await _managerStore.GetByEmailAsync(email, cancellationToken);

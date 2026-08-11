@@ -36,6 +36,7 @@ builder.Services.AddFantasyPremierLeaguePlaywright(options =>
 
     options.InteractionTimeout =
         TimeSpan.FromSeconds(0);
+    options.ShowLog = true;
 });
 
 // Replace this with your MongoDB, SQL, Redis,
