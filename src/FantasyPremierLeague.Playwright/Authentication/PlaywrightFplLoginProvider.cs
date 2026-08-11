@@ -74,7 +74,6 @@ public sealed class PlaywrightFplLoginProvider :
     {
         ArgumentNullException.ThrowIfNull(options);
         ArgumentNullException.ThrowIfNull(logger);
-
         _options = options.Value;
         _logger = logger;
     }
