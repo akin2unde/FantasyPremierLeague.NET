@@ -6,6 +6,10 @@ namespace FantasyPremierLeague.Playwright.Authentication;
 public sealed class FplPlaywrightOptions
 {
     /// <summary>
+    /// Describes the ShowLog member.
+    /// </summary>
+    public bool ShowLog { get; set; } = false;
+    /// <summary>
     /// Describes the Headless member.
     /// </summary>
     public bool Headless { get; set; } = true;
