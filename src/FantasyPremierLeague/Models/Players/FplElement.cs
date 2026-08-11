@@ -99,7 +99,7 @@ public class FplElement
     /// Gets or sets chance of playing this round.
     /// </summary>
     [JsonPropertyName("chance_of_playing_this_round")]
-    public string ChanceOfPlayingThisRound { get; set; } = string.Empty;
+    public int? ChanceOfPlayingThisRound { get; set; }
 
     /// <summary>
     /// Gets or sets player's full name.
@@ -110,19 +110,19 @@ public class FplElement
     /// Gets or sets chance of playing next round.
     /// </summary>
     [JsonPropertyName("chance_of_playing_next_round")]
-    public string ChanceOfPlayingNextRound { get; set; } = string.Empty;
+    public int? ChanceOfPlayingNextRound { get; set; }
 
     /// <summary>
     /// Gets or sets the player's value-for-form metric.
     /// </summary>
     [JsonPropertyName("value_form")]
-    public double ValueForm { get; set; }
+    public string? ValueForm { get; set; }
 
     /// <summary>
     /// Gets or sets the player's value-for-season metric.
     /// </summary>
     [JsonPropertyName("value_season")]
-    public double ValueSeason { get; set; }
+    public string? ValueSeason { get; set; }
 
     /// <summary>
     /// Gets or sets the player's price change since the start of the season.
@@ -371,36 +371,28 @@ public class FplElement
     /// </summary>
     public FplPlayerPosition PlayerPosition
     {
-        get
-        {
-            return ElementType == (int)FplPlayerPosition.NotSet
-                     ? (FplPlayerPosition)ElementType
-                     : PlayerPosition;
-        }
+        get; set;
     }
 
     private int position;
 
     /// <summary>
-    /// Gets or sets the player's position value.
+    /// Gets or sets the numeric FPL player position.
     /// </summary>
-    /// <remarks>
-    /// When <see cref="PlayerPosition"/> has not already been set,
-    /// assigning this property also converts the numeric position into
-    /// an <see cref="FplPlayerPosition"/> value.
-    /// </remarks>
     [JsonPropertyName("position")]
     public int Position
     {
-        get
-        {
-            return position;
-        }
+        get => position;
 
         set
         {
             position = value;
 
+            if (PlayerPosition == FplPlayerPosition.NotSet &&
+                Enum.IsDefined(typeof(FplPlayerPosition), value))
+            {
+                PlayerPosition = (FplPlayerPosition)value;
+            }
         }
     }
 
