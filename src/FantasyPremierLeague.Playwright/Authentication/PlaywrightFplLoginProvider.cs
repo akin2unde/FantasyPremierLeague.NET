@@ -12,15 +12,10 @@ namespace FantasyPremierLeague.Playwright.Authentication;
 /// Provides Playwright-based authentication for Fantasy Premier League.
 /// </summary>
 /// <remarks>
-/// The provider:
-/// <list type="number">
-/// <item>Opens Fantasy Premier League.</item>
-/// <item>Dismisses the optional cookie consent dialog.</item>
-/// <item>Opens the Premier League account login page.</item>
-/// <item>Submits the manager's credentials.</item>
-/// <item>Waits for either a successful token response or a login error.</item>
-/// <item>Returns the authenticated FPL session.</item>
-/// </list>
+/// The provider opens the Fantasy Premier League website, handles optional
+/// cookie-consent dialogs, redirects to the Premier League account website,
+/// submits the supplied credentials, captures the authentication token,
+/// and returns an authenticated FPL session.
 /// </remarks>
 public sealed class PlaywrightFplLoginProvider :
     IFplLoginProvider,
@@ -55,6 +50,7 @@ public sealed class PlaywrightFplLoginProvider :
     ];
 
     private readonly FplPlaywrightOptions _options;
+
     private readonly ILogger<PlaywrightFplLoginProvider> _logger;
 
     private readonly SemaphoreSlim _initializationLock =
@@ -84,7 +80,7 @@ public sealed class PlaywrightFplLoginProvider :
     }
 
     /// <summary>
-    /// Authenticates a Fantasy Premier League manager using Playwright.
+    /// Authenticates a Fantasy Premier League manager.
     /// </summary>
     /// <param name="email">
     /// The manager's Premier League account email address.
@@ -96,10 +92,10 @@ public sealed class PlaywrightFplLoginProvider :
     /// A token used to cancel the authentication operation.
     /// </param>
     /// <returns>
-    /// The authenticated Fantasy Premier League session.
+    /// The authenticated FPL session.
     /// </returns>
     /// <exception cref="FplAuthenticationException">
-    /// Thrown when authentication fails.
+    /// Thrown when authentication cannot be completed.
     /// </exception>
     public async Task<FplSession> LoginAsync(
         string email,
@@ -189,9 +185,10 @@ public sealed class PlaywrightFplLoginProvider :
 
             /*
              * STEP 2
-             * Wait until Log in is available.
+             * Wait until Log in is usable.
              *
-             * Cookie consent is optional.
+             * If the FPL cookie dialog appears, dismiss it.
+             * If it does not appear, continue normally.
              */
 
             var loginLink =
@@ -202,7 +199,7 @@ public sealed class PlaywrightFplLoginProvider :
 
             /*
              * STEP 3
-             * Open Premier League account page.
+             * Redirect to Premier League account login.
              */
 
             LogInformation(
@@ -217,6 +214,19 @@ public sealed class PlaywrightFplLoginProvider :
 
             /*
              * STEP 4
+             * The Premier League account page may show its own
+             * OneTrust cookie dialog.
+             */
+
+            LogInformation(
+                "Premier League account page reached. Checking for cookie consent.");
+
+            await DismissCookieIfPresentAsync(
+                page,
+                cancellationToken);
+
+            /*
+             * STEP 5
              * Enter credentials.
              */
 
@@ -261,14 +271,11 @@ public sealed class PlaywrightFplLoginProvider :
                         });
 
             /*
-             * STEP 5
-             * Start listening for the token BEFORE
-             * clicking Sign In.
+             * STEP 6
+             * Start listening for the token BEFORE clicking Sign In.
              *
-             * Do not require response.Ok here.
-             *
-             * We want to capture the token endpoint even
-             * when it returns a failure status.
+             * Do not require response.Ok here because we want to
+             * capture unsuccessful token responses too.
              */
 
             var tokenResponseTask =
@@ -284,7 +291,8 @@ public sealed class PlaywrightFplLoginProvider :
                     });
 
             /*
-             * Also start looking for visible login errors.
+             * At the same time, monitor the page for an explicit
+             * authentication error such as invalid credentials.
              */
 
             var loginErrorTask =
@@ -296,22 +304,27 @@ public sealed class PlaywrightFplLoginProvider :
             LogInformation(
                 "Credentials entered. Clicking Sign In.");
 
-            await submit.ClickAsync(
-                new LocatorClickOptions
-                {
-                    Timeout =
-                        (float)interactionTimeout.TotalMilliseconds
-                });
+            /*
+             * OneTrust sometimes appears AFTER the account page
+             * has already rendered, so check again immediately
+             * before clicking Sign In.
+             */
+
+            await ClickSignInAsync(
+                page,
+                submit,
+                interactionTimeout,
+                cancellationToken);
 
             LogInformation(
                 "Sign In button clicked. Waiting for authentication result.");
 
             /*
-             * STEP 6
-             * Wait for whichever occurs first:
+             * STEP 7
+             * Wait for either:
              *
-             * - authentication token response
-             * - visible invalid-credentials/login error
+             * - token response
+             * - visible login error
              */
 
             var completedTask =
@@ -319,9 +332,6 @@ public sealed class PlaywrightFplLoginProvider :
                     tokenResponseTask,
                     loginErrorTask);
 
-            /*
-             * A login error appeared first.
-             */
             if (completedTask == loginErrorTask)
             {
                 var loginError =
@@ -336,13 +346,15 @@ public sealed class PlaywrightFplLoginProvider :
                         email,
                         loginError);
 
-                    throw new FplAuthenticationException("Incorrect email or password");
+                    throw new FplAuthenticationException(
+                        "Fantasy Premier League authentication failed because " +
+                        "the Premier League account rejected the supplied username or password.");
                 }
             }
 
             /*
-             * If no login error was detected,
-             * wait for the token response.
+             * No visible login error was found first.
+             * Await the token endpoint response.
              */
 
             var response =
@@ -357,14 +369,14 @@ public sealed class PlaywrightFplLoginProvider :
                 await response.TextAsync();
 
             /*
-             * We intentionally check response.Ok AFTER capturing
-             * the response so failures do not look like timeouts.
+             * Evaluate HTTP success after capturing the response.
              */
 
             if (!response.Ok)
             {
                 var visibleLoginError =
-                    await GetLoginErrorAsync(page);
+                    await GetLoginErrorAsync(
+                        page);
 
                 if (!string.IsNullOrWhiteSpace(
                         visibleLoginError))
@@ -381,18 +393,14 @@ public sealed class PlaywrightFplLoginProvider :
                         "the Premier League account rejected the supplied credentials.");
                 }
 
-                LogWarning(
-                    "Premier League token endpoint returned HTTP {Status}.",
-                    response.Status);
-
                 throw new FplAuthenticationException(
                     $"Fantasy Premier League authentication failed. " +
                     $"The token endpoint returned HTTP {response.Status}.");
             }
 
             /*
-             * STEP 7
-             * Parse the successful token response.
+             * STEP 8
+             * Parse the token response.
              */
 
             LogInformation(
@@ -404,10 +412,11 @@ public sealed class PlaywrightFplLoginProvider :
                     DateTimeOffset.UtcNow);
 
             /*
-             * STEP 8
-             * The final redirect back to Fantasy is useful,
-             * but receiving the token is the primary indication
-             * that authentication succeeded.
+             * STEP 9
+             * The final redirect is secondary.
+             *
+             * Once the token is valid, a slow final browser redirect
+             * should not invalidate authentication.
              */
 
             await TryWaitForFantasyRedirectAsync(
@@ -430,22 +439,18 @@ public sealed class PlaywrightFplLoginProvider :
         }
         catch (FplAuthenticationException)
         {
-            /*
-             * Preserve meaningful authentication exceptions
-             * such as invalid username/password.
-             */
-
             throw;
         }
         catch (TimeoutException exception)
         {
             /*
-             * Before reporting a timeout, perform one final
-             * check for a visible Premier League login error.
+             * Before reporting a generic timeout, check one
+             * final time for an explicit login error.
              */
 
             var loginError =
-                await GetLoginErrorAsync(page);
+                await GetLoginErrorAsync(
+                    page);
 
             if (!string.IsNullOrWhiteSpace(
                     loginError))
@@ -491,11 +496,18 @@ public sealed class PlaywrightFplLoginProvider :
     /// <summary>
     /// Waits until the Fantasy Premier League Log in control becomes usable.
     /// </summary>
-    /// <remarks>
-    /// Cookie consent is optional. If the dialog appears it is dismissed.
-    /// If no dialog appears and Log in is visible, this method continues
-    /// immediately.
-    /// </remarks>
+    /// <param name="page">
+    /// The current Playwright page.
+    /// </param>
+    /// <param name="overallTimeout">
+    /// The maximum amount of time to wait.
+    /// </param>
+    /// <param name="cancellationToken">
+    /// A token used to cancel the operation.
+    /// </param>
+    /// <returns>
+    /// The visible FPL Log in control.
+    /// </returns>
     private async Task<ILocator> WaitUntilLoginReadyAsync(
         IPage page,
         TimeSpan overallTimeout,
@@ -555,10 +567,6 @@ public sealed class PlaywrightFplLoginProvider :
                 continue;
             }
 
-            /*
-             * No cookie dialog is blocking the page.
-             */
-
             var visibleLogin =
                 await FirstVisibleAsync(
                     loginCandidates);
@@ -583,7 +591,53 @@ public sealed class PlaywrightFplLoginProvider :
     }
 
     /// <summary>
-    /// Attempts to dismiss the cookie consent dialog.
+    /// Dismisses a visible cookie dialog if one is currently present.
+    /// </summary>
+    private async Task DismissCookieIfPresentAsync(
+        IPage page,
+        CancellationToken cancellationToken)
+    {
+        cancellationToken
+            .ThrowIfCancellationRequested();
+
+        var cookieButton =
+            await FirstVisibleCookieButtonAsync(
+                page);
+
+        if (cookieButton is null)
+        {
+            LogInformation(
+                "No cookie consent dialog detected on {Url}.",
+                page.Url);
+
+            return;
+        }
+
+        LogInformation(
+            "Cookie consent dialog detected on {Url}. Clicking accept.",
+            page.Url);
+
+        var dismissed =
+            await TryDismissCookieDialogAsync(
+                cookieButton,
+                cancellationToken);
+
+        if (dismissed)
+        {
+            LogInformation(
+                "Cookie consent dialog removed from {Url}.",
+                page.Url);
+        }
+        else
+        {
+            LogWarning(
+                "Cookie consent dialog could not be confirmed as removed from {Url}.",
+                page.Url);
+        }
+    }
+
+    /// <summary>
+    /// Attempts to dismiss the supplied cookie-consent control.
     /// </summary>
     private async Task<bool> TryDismissCookieDialogAsync(
         ILocator cookieButton,
@@ -595,7 +649,7 @@ public sealed class PlaywrightFplLoginProvider :
         try
         {
             /*
-             * First attempt a normal click.
+             * Try a normal Playwright click first.
              */
 
             await cookieButton.ClickAsync(
@@ -613,6 +667,11 @@ public sealed class PlaywrightFplLoginProvider :
         }
         catch (TimeoutException)
         {
+            /*
+             * If normal Playwright actionability checks fail,
+             * try forcing the cookie button only.
+             */
+
             LogWarning(
                 "Normal cookie consent click timed out. Trying forced click.");
 
@@ -643,8 +702,7 @@ public sealed class PlaywrightFplLoginProvider :
         catch (PlaywrightException exception)
         {
             /*
-             * The dialog may have been removed/re-rendered
-             * between detection and clicking.
+             * OneTrust may re-render between detection and clicking.
              */
 
             LogWarning(
@@ -656,7 +714,7 @@ public sealed class PlaywrightFplLoginProvider :
     }
 
     /// <summary>
-    /// Waits for the cookie consent button to disappear.
+    /// Waits briefly for the cookie consent control to disappear.
     /// </summary>
     private async Task<bool> WaitForCookieToDisappearAsync(
         ILocator cookieButton,
@@ -685,8 +743,8 @@ public sealed class PlaywrightFplLoginProvider :
         catch (PlaywrightException)
         {
             /*
-             * If the element was detached from the DOM,
-             * the dialog is effectively gone.
+             * If the element disappeared from the DOM completely,
+             * consider the dialog successfully removed.
              */
 
             return true;
@@ -694,8 +752,8 @@ public sealed class PlaywrightFplLoginProvider :
     }
 
     /// <summary>
-    /// Clicks the Fantasy Premier League Log in control and waits for
-    /// the Premier League account login page.
+    /// Clicks the FPL Log in control and waits for the Premier League
+    /// account page.
     /// </summary>
     private async Task ClickLoginAndWaitForAccountPageAsync(
         IPage page,
@@ -705,8 +763,8 @@ public sealed class PlaywrightFplLoginProvider :
         CancellationToken cancellationToken)
     {
         /*
-         * Start listening before clicking so we cannot
-         * miss a fast redirect.
+         * Start waiting before clicking so a fast redirect
+         * cannot occur before the waiter starts.
          */
 
         var accountUrlTask =
@@ -733,8 +791,8 @@ public sealed class PlaywrightFplLoginProvider :
     }
 
     /// <summary>
-    /// Waits for the redirect to the Premier League account page while
-    /// periodically logging progress.
+    /// Waits for the Premier League account redirect while periodically
+    /// reporting progress.
     /// </summary>
     private async Task WaitForAccountPageWithProgressAsync(
         IPage page,
@@ -745,7 +803,7 @@ public sealed class PlaywrightFplLoginProvider :
             DateTimeOffset.UtcNow.Add(
                 overallTimeout);
 
-        const int progressIntervalSeconds = 20;
+        const int intervalSeconds = 20;
 
         var attempt = 1;
 
@@ -760,11 +818,9 @@ public sealed class PlaywrightFplLoginProvider :
 
             var waitFor =
                 remaining <
-                TimeSpan.FromSeconds(
-                    progressIntervalSeconds)
+                TimeSpan.FromSeconds(intervalSeconds)
                     ? remaining
-                    : TimeSpan.FromSeconds(
-                        progressIntervalSeconds);
+                    : TimeSpan.FromSeconds(intervalSeconds);
 
             if (waitFor <= TimeSpan.Zero)
             {
@@ -809,21 +865,77 @@ public sealed class PlaywrightFplLoginProvider :
     }
 
     /// <summary>
+    /// Clicks Sign In while handling a cookie dialog that may appear
+    /// asynchronously after the Premier League account page has loaded.
+    /// </summary>
+    private async Task ClickSignInAsync(
+        IPage page,
+        ILocator submit,
+        TimeSpan interactionTimeout,
+        CancellationToken cancellationToken)
+    {
+        cancellationToken
+            .ThrowIfCancellationRequested();
+
+        /*
+         * One final check immediately before clicking.
+         */
+
+        await DismissCookieIfPresentAsync(
+            page,
+            cancellationToken);
+
+        try
+        {
+            await submit.ClickAsync(
+                new LocatorClickOptions
+                {
+                    Timeout =
+                        (float)interactionTimeout.TotalMilliseconds
+                });
+
+            return;
+        }
+        catch (TimeoutException)
+        {
+            /*
+             * The stack trace you encountered shows exactly this case:
+             * OneTrust can render after our previous check and intercept
+             * pointer events while Playwright is trying to click Sign In.
+             */
+
+            var cookieButton =
+                await FirstVisibleCookieButtonAsync(
+                    page);
+
+            if (cookieButton is null)
+            {
+                throw;
+            }
+
+            LogWarning(
+                "Sign In click was blocked by a cookie consent dialog. " +
+                "Dismissing the dialog and retrying.");
+
+            await DismissCookieIfPresentAsync(
+                page,
+                cancellationToken);
+
+            await submit.ClickAsync(
+                new LocatorClickOptions
+                {
+                    Timeout =
+                        (float)interactionTimeout.TotalMilliseconds
+                });
+
+            LogInformation(
+                "Sign In click succeeded after removing the cookie dialog.");
+        }
+    }
+
+    /// <summary>
     /// Waits for a visible login error from the Premier League account page.
     /// </summary>
-    /// <param name="page">
-    /// The Premier League account page.
-    /// </param>
-    /// <param name="timeout">
-    /// The maximum amount of time to wait.
-    /// </param>
-    /// <param name="cancellationToken">
-    /// A token used to cancel the operation.
-    /// </param>
-    /// <returns>
-    /// The visible login error, or <see langword="null"/> when no known
-    /// login error appears before the timeout.
-    /// </returns>
     private static async Task<string?> WaitForLoginErrorAsync(
         IPage page,
         TimeSpan timeout,
@@ -857,8 +969,8 @@ public sealed class PlaywrightFplLoginProvider :
     }
 
     /// <summary>
-    /// Looks for known authentication errors displayed by the
-    /// Premier League account website.
+    /// Returns a known authentication error displayed by the Premier League
+    /// account website.
     /// </summary>
     private static async Task<string?> GetLoginErrorAsync(
         IPage page)
@@ -893,8 +1005,8 @@ public sealed class PlaywrightFplLoginProvider :
     /// Attempts to confirm the final redirect back to Fantasy Premier League.
     /// </summary>
     /// <remarks>
-    /// Once a valid authentication token has been received, failure of this
-    /// secondary redirect does not invalidate the authentication session.
+    /// Once a valid token has been received, a slow final redirect does not
+    /// invalidate the authenticated session.
     /// </remarks>
     private async Task TryWaitForFantasyRedirectAsync(
         IPage page,
@@ -935,13 +1047,13 @@ public sealed class PlaywrightFplLoginProvider :
         {
             LogWarning(
                 exception,
-                "Authentication token was received, but the final Fantasy Premier League " +
-                "redirect could not be confirmed.");
+                "Authentication token was received, but the final FPL redirect " +
+                "could not be confirmed.");
         }
     }
 
     /// <summary>
-    /// Returns the first visible element matched by the supplied locator.
+    /// Returns the first visible element matched by a locator.
     /// </summary>
     private static async Task<ILocator?> FirstVisibleAsync(
         ILocator locator)
@@ -964,7 +1076,7 @@ public sealed class PlaywrightFplLoginProvider :
     }
 
     /// <summary>
-    /// Finds the first visible supported cookie-consent button.
+    /// Returns the first visible supported cookie consent button.
     /// </summary>
     private static async Task<ILocator?> FirstVisibleCookieButtonAsync(
         IPage page)
@@ -987,37 +1099,27 @@ public sealed class PlaywrightFplLoginProvider :
     }
 
     /// <summary>
-    /// Returns a bounded navigation timeout.
+    /// Gets a bounded browser navigation timeout.
     /// </summary>
-    /// <remarks>
-    /// Zero or negative values fall back to 90 seconds so browser
-    /// navigation cannot wait indefinitely.
-    /// </remarks>
     private TimeSpan GetNavigationTimeout()
     {
-        return _options.NavigationTimeout <=
-               TimeSpan.Zero
+        return _options.NavigationTimeout <= TimeSpan.Zero
             ? TimeSpan.FromSeconds(90)
             : _options.NavigationTimeout;
     }
 
     /// <summary>
-    /// Returns a bounded interaction timeout.
+    /// Gets a bounded browser interaction timeout.
     /// </summary>
-    /// <remarks>
-    /// Zero or negative values fall back to 15 seconds so individual
-    /// page interactions cannot wait indefinitely.
-    /// </remarks>
     private TimeSpan GetInteractionTimeout()
     {
-        return _options.InteractionTimeout <=
-               TimeSpan.Zero
+        return _options.InteractionTimeout <= TimeSpan.Zero
             ? TimeSpan.FromSeconds(15)
             : _options.InteractionTimeout;
     }
 
     /// <summary>
-    /// Gets or creates the shared Playwright instance.
+    /// Gets or creates the Playwright instance.
     /// </summary>
     private async Task<IPlaywright> GetPlaywrightAsync(
         CancellationToken cancellationToken)
@@ -1045,7 +1147,7 @@ public sealed class PlaywrightFplLoginProvider :
     }
 
     /// <summary>
-    /// Logs an informational message when SDK logging is enabled.
+    /// Logs an informational message when logging is enabled.
     /// </summary>
     private void LogInformation(
         string message,
@@ -1060,7 +1162,7 @@ public sealed class PlaywrightFplLoginProvider :
     }
 
     /// <summary>
-    /// Logs a warning when SDK logging is enabled.
+    /// Logs a warning when logging is enabled.
     /// </summary>
     private void LogWarning(
         string message,
@@ -1075,7 +1177,7 @@ public sealed class PlaywrightFplLoginProvider :
     }
 
     /// <summary>
-    /// Logs a warning with an exception when SDK logging is enabled.
+    /// Logs a warning containing an exception when logging is enabled.
     /// </summary>
     private void LogWarning(
         Exception exception,
@@ -1092,7 +1194,7 @@ public sealed class PlaywrightFplLoginProvider :
     }
 
     /// <summary>
-    /// Logs an error with an exception when SDK logging is enabled.
+    /// Logs an error containing an exception when logging is enabled.
     /// </summary>
     private void LogError(
         Exception exception,
