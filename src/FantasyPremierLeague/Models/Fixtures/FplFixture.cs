@@ -5,7 +5,7 @@ namespace FantasyPremierLeague.Models.Fixtures;
 /// <summary>
 /// Represents fpl fixture.
 /// </summary>
-public sealed class FplFixture
+public class FplFixture
 {
     /// <summary>
     /// Gets or sets the id.
@@ -17,7 +17,7 @@ public sealed class FplFixture
     /// Gets or sets the code.
     /// </summary>
     [JsonPropertyName("code")]
-    public long Code { get; set; }
+    public long FixtureCode { get; set; }
 
     /// <summary>
     /// Gets or sets the event.
@@ -65,7 +65,7 @@ public sealed class FplFixture
     /// Gets or sets the kickoff time.
     /// </summary>
     [JsonPropertyName("kickoff_time")]
-    public DateTimeOffset? KickoffTime { get; set; }
+    public DateTimeOffset? GameTime { get; set; }
 
     /// <summary>
     /// Gets or sets the finished.
@@ -83,5 +83,18 @@ public sealed class FplFixture
     /// Gets or sets the minutes.
     /// </summary>
     [JsonPropertyName("minutes")]
-    public int Minutes { get; set; }
+    public int MinutePlayed { get; set; }
+
+    /// <summary>
+    /// Gets or sets the game week name .
+    /// </summary>
+    [JsonPropertyName("event_name")]
+    public string GWName { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Gets or sets the game week stat info .
+    /// </summary>
+    [JsonPropertyName("stats")]
+    public List<FplFixtureStatElement> GameStats { get; set; } = [];
+
 }

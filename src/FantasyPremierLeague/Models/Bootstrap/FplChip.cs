@@ -5,7 +5,7 @@ namespace FantasyPremierLeague.Models.Bootstrap;
 /// <summary>
 /// Represents chip team info.
 /// </summary>
-public sealed class FplChip
+public class FplChip
 {
 
     /// <summary>

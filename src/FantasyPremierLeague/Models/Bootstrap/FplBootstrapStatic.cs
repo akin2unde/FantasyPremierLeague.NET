@@ -5,7 +5,7 @@ namespace FantasyPremierLeague.Models.Bootstrap;
 /// <summary>
 /// Represents fpl bootstrap static.
 /// </summary>
-public sealed class FplBootstrapStatic
+public class FplBootstrapStatic
 {
     /// <summary>
     /// Gets or sets the phases.
