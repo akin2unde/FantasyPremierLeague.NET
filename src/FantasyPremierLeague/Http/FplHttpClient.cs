@@ -91,8 +91,16 @@ public sealed class FplHttpClient
             throw new FplException(
                 $"FPL returned {(int)response.StatusCode} ({response.ReasonPhrase}) for '{path}'. Body: {responseBody}");
         }
+        try
+        {
+            return await response.Content.ReadFromJsonAsync<T>(JsonOptions, cancellationToken) ?? throw new FplException($"FPL returned an empty response for '{path}'.");
 
-        return await response.Content.ReadFromJsonAsync<T>(JsonOptions, cancellationToken)
-            ?? throw new FplException($"FPL returned an empty response for '{path}'.");
+        }
+        catch (Exception ex)
+        {
+            Console.Write($"{ex.Message}");
+            throw;
+
+        }
     }
 }
