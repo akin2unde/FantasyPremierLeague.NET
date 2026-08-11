@@ -1,5 +1,6 @@
 using System.Text.Json.Serialization;
 using FantasyPremierLeague.Models.Bootstrap;
+using FantasyPremierLeague.Models.Players;
 
 namespace FantasyPremierLeague.Models.Fixtures;
 

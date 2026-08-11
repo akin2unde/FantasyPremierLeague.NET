@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace FantasyPremierLeague.Models.Bootstrap;
+namespace FantasyPremierLeague.Models.Players;
 
 /// <summary>
 /// Represents fpl element type.

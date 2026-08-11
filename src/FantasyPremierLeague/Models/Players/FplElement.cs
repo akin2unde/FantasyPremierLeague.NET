@@ -1,7 +1,7 @@
 using System.Text.Json.Serialization;
 using FPLBE.Models;
 
-namespace FantasyPremierLeague.Models.Bootstrap;
+namespace FantasyPremierLeague.Models.Players;
 
 /// <summary>
 /// Represents fpl element.
@@ -40,29 +40,17 @@ public class FplElement
 
 
     /// <summary>
-    /// Gets or sets the element type.
-    /// </summary>
-    [JsonPropertyName("element_type")]
-    public int ElementType { get; set; }
-
-    /// <summary>
-    /// Gets or sets the now cost.
-    /// </summary>
-    [JsonPropertyName("now_cost")]
-    public float Price { get; set; }
-
-    /// <summary>
     /// Gets or sets the total points.
     /// </summary>
     [JsonPropertyName("total_points")]
     public int TotalPoints { get; set; }
 
-
+    private string photo = string.Empty;
     /// <summary>
     /// Gets or sets the photo.
     /// </summary>
     [JsonPropertyName("photo")]
-    public string Photo { get; set; } = string.Empty;
+    public string Photo { get { return photo.Replace("jpg", "png"); } set { photo = value; } }
 
     /// <summary>
     /// Gets or sets the player club code.
@@ -113,6 +101,10 @@ public class FplElement
     [JsonPropertyName("chance_of_playing_this_round")]
     public string ChanceOfPlayingThisRound { get; set; } = string.Empty;
 
+    /// <summary>
+    /// Gets or sets player's full name.
+    /// </summary>
+    public string FullName { get { return FirstName + " " + SecondName; } }
 
     /// <summary>
     /// Gets or sets chance of playing next round.
@@ -417,4 +409,79 @@ public class FplElement
     /// </summary>
     [JsonPropertyName("team")]
     public int TeamId { get; set; }
+
+    /// <summary>
+    /// Stores the raw purchase price returned by the FPL API.
+    /// </summary>
+    /// <remarks>
+    /// FPL represents player prices in tenths of a monetary unit.
+    /// For example, a raw value of 75 represents 7.5.
+    /// </remarks>
+    private float cost;
+
+    /// <summary>
+    /// Gets or sets the player's purchase price.
+    /// </summary>
+    /// <remarks>
+    /// The value returned by the FPL API is stored internally in tenths
+    /// and is divided by 10 when this property is read.
+    /// For example, an API value of 75 is exposed as 7.5.
+    /// </remarks>
+    [JsonPropertyName("purchase_price")]
+    public float Cost
+    {
+        get { return cost / 10; }
+        set { cost = value; }
+    }
+
+    /// <summary>
+    /// Stores the raw selling price returned by the FPL API.
+    /// </summary>
+    /// <remarks>
+    /// FPL represents player prices in tenths of a monetary unit.
+    /// </remarks>
+    private float sellingPrice;
+
+    /// <summary>
+    /// Gets or sets the player's current selling price.
+    /// </summary>
+    /// <remarks>
+    /// The raw FPL value is divided by 10 when this property is read.
+    /// For example, a raw selling price of 76 is exposed as 7.6.
+    /// </remarks>
+    [JsonPropertyName("selling_price")]
+    public float SellingPrice
+    {
+        get { return sellingPrice / 10; }
+        set { sellingPrice = value; }
+    }
+
+    /// <summary>
+    /// Stores the player's raw current price returned by the FPL API.
+    /// </summary>
+    /// <remarks>
+    /// FPL represents player prices in tenths of a monetary unit.
+    /// </remarks>
+    private float price;
+
+    /// <summary>
+    /// Gets or sets the player's current FPL price.
+    /// </summary>
+    /// <remarks>
+    /// The value returned by the FPL API is stored internally and divided
+    /// by 10 when this property is read.
+    /// For example, a raw <c>now_cost</c> value of 125 is exposed as 12.5.
+    /// </remarks>
+    [JsonPropertyName("now_cost")]
+    public float Price
+    {
+        get { return price / 10; }
+        set { price = value; }
+    }
+
+    /// <summary>
+    /// Gets or sets the element type.
+    /// </summary>
+    [JsonPropertyName("element_type")]
+    public int ElementType { get; set; }
 }
