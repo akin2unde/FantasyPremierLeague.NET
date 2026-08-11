@@ -1,5 +1,5 @@
 using System.Text.Json.Serialization;
-using FantasyPremierLeague.Models.Bootstrap;
+
 
 namespace FantasyPremierLeague.Models.Fixtures;
 
@@ -29,5 +29,5 @@ public class FplFixtureStatElement
     /// This property is populated by the application and is not mapped
     /// directly from the FPL fixture statistic response.
     /// </remarks>
-    public FplElement? Player { get; set; }
+    public Players.FplElement? Player { get; set; }
 }

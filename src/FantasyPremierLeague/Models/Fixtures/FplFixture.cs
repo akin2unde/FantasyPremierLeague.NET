@@ -96,5 +96,11 @@ public class FplFixture
     /// </summary>
     [JsonPropertyName("stats")]
     public List<FplFixtureStatElement> GameStats { get; set; } = [];
+    /// <summary>
+    /// Gets or sets opponent difficulty .
+    /// </summary>
+
+    [JsonPropertyName("difficulty")]
+    public int OpponentDificulty { get; set; }
 
 }
