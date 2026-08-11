@@ -27,6 +27,9 @@ public static class FantasyPremierLeagueServiceCollectionExtensions
 
         services.TryAddSingleton<IFplManagerStore, InMemoryFplManagerStore>();
         services.TryAddSingleton<IFplLoginProvider, MissingFplLoginProvider>();
+        services.AddScoped<
+         ILoadProfile,
+         LoadProfile>();
 
         services.AddScoped<
             IFplAuthenticationManager,
