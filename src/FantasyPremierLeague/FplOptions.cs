@@ -25,4 +25,9 @@ public sealed class FplOptions
     /// Describes the ReuseStoredToken member.
     /// </summary>
     public bool ReuseStoredToken { get; set; } = true;
+
+    /// <summary>
+    /// Describes the Load Profile and Entry after Login.
+    /// </summary>
+    public bool LoadProfileAfterLogin { get; set; } = false;
 }

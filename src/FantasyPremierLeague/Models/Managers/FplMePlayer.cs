@@ -7,6 +7,25 @@ namespace FantasyPremierLeague.Models.Managers;
 /// </summary>
 public sealed class FplMePlayer
 {
+
+    /// <summary>
+    /// Gets or sets gender.
+    /// </summary>
+    [JsonPropertyName("gender")]
+    public string? Gender { get; set; }
+
+    /// <summary>
+    /// Gets or sets date of birth.
+    /// </summary>
+    [JsonPropertyName("date_of_birth")]
+    public string? DOB { get; set; }
+
+    /// <summary>
+    /// Gets or sets the manager's joinned gw.
+    /// </summary>
+    [JsonPropertyName("default_event")]
+    public int JoinnedGW { get; set; }
+
     /// <summary>
     /// Gets or sets the id.
     /// </summary>

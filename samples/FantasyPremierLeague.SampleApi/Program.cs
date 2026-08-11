@@ -23,6 +23,7 @@ builder.Services.AddFantasyPremierLeague(options =>
 
     options.UserAgent =
         "FantasyPremierLeague.SampleApi/1.0";
+    options.LoadProfileAfterLogin = true;
 });
 
 // Register Playwright authentication

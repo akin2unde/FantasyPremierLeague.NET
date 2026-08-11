@@ -5,11 +5,11 @@ namespace FantasyPremierLeague.Authentication;
 
 internal sealed class FplAuthenticationManager : IFplAuthenticationManager
 {
+    private readonly ILoadProfile _loadProfile;
     private readonly IFplLoginProvider _loginProvider;
     private readonly IFplManagerStore _managerStore;
     private readonly FplOptions _options;
     private readonly SemaphoreSlim _loginLock = new(1, 1);
-    private string? _currentPassword;
     /// <summary>
     /// Provides the member member.
     /// </summary>
@@ -17,12 +17,42 @@ internal sealed class FplAuthenticationManager : IFplAuthenticationManager
     /// <summary>
     /// Describes the FplAuthenticationManager member.
     /// </summary>
-    public FplAuthenticationManager(IFplLoginProvider loginProvider, IFplManagerStore managerStore, IOptions<FplOptions> options)
+    public FplAuthenticationManager(IFplLoginProvider loginProvider, IFplManagerStore managerStore, ILoadProfile loadProfile, IOptions<FplOptions> options)
     {
         _loginProvider = loginProvider;
         _managerStore = managerStore;
+        _loadProfile = loadProfile;
         _options = options.Value;
     }
+    // public async Task<FplManagerRecord> SaveManagerAsync(
+    //   FplManagerRecord manager,
+    //   CancellationToken cancellationToken = default)
+    // {
+    //     ArgumentNullException.ThrowIfNull(manager);
+
+    //     if (manager.EntryId <= 0)
+    //     {
+    //         throw new InvalidOperationException(
+    //             "Manager entry ID must be available before loading profile data.");
+    //     }
+
+    //     var profile = await _fplClient.Managers.GetProfileAsync(
+    //         manager.EntryId,
+    //         cancellationToken);
+
+    //     var entry = await _fplClient.Managers.GetEntryAsync(
+    //         manager.EntryId,
+    //         cancellationToken);
+
+    //     manager.Profile = profile;
+    //     manager.Entry = entry;
+
+    //     await _managerStore.SaveAsync(
+    //         manager,
+    //         cancellationToken);
+
+    //     return manager;
+    // }
     /// <summary>
     /// Describes the LoginAsync member.
     /// </summary>
@@ -36,7 +66,6 @@ internal sealed class FplAuthenticationManager : IFplAuthenticationManager
             if (!forceRefresh && saved is not null && saved.HasUsableToken(_options.RefreshBeforeExpiry))
             {
                 CurrentManager ??= saved;
-                _currentPassword = password;
                 return saved;
             }
             var session = await _loginProvider.LoginAsync(email, password, cancellationToken);
@@ -46,8 +75,16 @@ internal sealed class FplAuthenticationManager : IFplAuthenticationManager
             record.TokenExpiresAt = session.ExpiresAt;
             record.RefreshToken = session.RefreshToken;
             record.UpdatedAt = DateTimeOffset.UtcNow;
+            record.Password = password;
+            if (_options.LoadProfileAfterLogin)
+            {
+                await _loadProfile.SetProfileAsync(record, cancellationToken);
+            }
             await _managerStore.SaveAsync(record, cancellationToken);
-            CurrentManager = record; _currentPassword = password;
+
+            CurrentManager = record;
+            //remove the password
+            record.Password = string.Empty;
             return record;
         }
         finally { _loginLock.Release(); }
@@ -62,19 +99,24 @@ internal sealed class FplAuthenticationManager : IFplAuthenticationManager
     /// </summary>
     public async Task<string> RefreshCurrentAsync(CancellationToken cancellationToken)
     {
-        if (CurrentManager is null || _currentPassword is null) throw new FplAuthenticationException("The current session cannot be refreshed because credentials are unavailable.");
-        var refreshed = await LoginAsync(CurrentManager.Email, _currentPassword, true, cancellationToken); return refreshed.AccessToken;
+        if (CurrentManager is null || CurrentManager.Password is null) throw new FplAuthenticationException("The current session cannot be refreshed because credentials are unavailable.");
+        var refreshed = await LoginAsync(CurrentManager.Email, CurrentManager.Password, true, cancellationToken); return refreshed.AccessToken;
     }
     /// <summary>
     /// Provides the SaveCurrentAsync member.
     /// </summary>
     public async Task SaveCurrentAsync(FplManagerRecord manager, CancellationToken cancellationToken)
-    { CurrentManager = manager; await _managerStore.SaveAsync(manager, cancellationToken); }
+    {
+        CurrentManager = manager; await _managerStore.SaveAsync(manager, cancellationToken);
+    }
     /// <summary>
     /// Describes the InvalidateCurrentAsync member.
     /// </summary>
     public Task InvalidateCurrentAsync(CancellationToken cancellationToken)
-    { CurrentManager = null; _currentPassword = null; return Task.CompletedTask; }
+    {
+        CurrentManager = null;
+        return Task.CompletedTask;
+    }
 
     /// <inheritdoc />
     public Task LogoutAsync(

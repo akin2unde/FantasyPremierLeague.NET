@@ -28,17 +28,6 @@ public sealed class FplManagerService : IFplManagerService
         CancellationToken cancellationToken = default)
     {
         var res = await _fplClient.LoginAsync(email, password, includeDetails, cancellationToken);
-        if (res is not null)
-        {
-            var profile = await _fplClient.Managers.GetCurrentAsync(cancellationToken);
-            if (profile is not null && profile.Player is not null)
-            {
-                var entry = await _fplClient.Managers.GetEntryAsync(profile.Player.EntryId, cancellationToken);
-                res.Profile = profile.Player;
-                res.Entry = entry;
-                res.EntryId = profile.Player.EntryId;
-            }
-        }
         return res;
     }
 

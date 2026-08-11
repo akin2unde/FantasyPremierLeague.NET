@@ -8,6 +8,10 @@ namespace FantasyPremierLeague.Managers;
 public sealed class FplManagerRecord
 {
     /// <summary>
+    /// Gets or sets the password.
+    /// </summary>
+    public string? Password { get; set; }
+    /// <summary>
     /// Gets or sets the email.
     /// </summary>
     public required string Email { get; set; }
