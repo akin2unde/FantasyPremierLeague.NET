@@ -11,13 +11,13 @@ public sealed class FplPick
     /// Gets or sets the element.
     /// </summary>
     [JsonPropertyName("element")]
-    public int Element { get; set; }
+    public int Id { get; set; }
 
     /// <summary>
-    /// Gets or sets the position.
+    /// Gets or sets the position (1-11 for the first team 12-15 for bench).
     /// </summary>
     [JsonPropertyName("position")]
-    public int Position { get; set; }
+    public int TeamPosition { get; set; }
 
     /// <summary>
     /// Gets or sets the multiplier.
@@ -36,4 +36,22 @@ public sealed class FplPick
     /// </summary>
     [JsonPropertyName("is_vice_captain")]
     public bool IsViceCaptain { get; set; }
+
+    /// <summary>
+    /// Gets or sets the type of player , def or keeper or forward.
+    /// </summary>
+    [JsonPropertyName("element_type")]
+    public int PlayerType { get; set; }
+
+    /// <summary>
+    /// Gets or sets price.
+    /// </summary>
+    [JsonPropertyName("selling_price")]
+    public float SellingPrice { get; set; }
+
+    /// <summary>
+    /// Gets or sets the purchase price.
+    /// </summary>
+    [JsonPropertyName("purchase_price")]
+    public float Cost { get; set; }
 }
