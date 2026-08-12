@@ -11,13 +11,13 @@ public sealed class FplPick
     /// Gets or sets the element.
     /// </summary>
     [JsonPropertyName("element")]
-    public int Element { get; set; }
+    public int Id { get; set; }
 
     /// <summary>
-    /// Gets or sets the position.
+    /// Gets or sets the position (1-11 for the first team 12-15 for bench).
     /// </summary>
     [JsonPropertyName("position")]
-    public int Position { get; set; }
+    public int TeamPosition { get; set; }
 
     /// <summary>
     /// Gets or sets the multiplier.
