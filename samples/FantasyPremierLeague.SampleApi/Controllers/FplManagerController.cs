@@ -33,6 +33,7 @@ public sealed class FplManagerController : ControllerBase
         var manager = await _service.LoginAsync(
             request.Email,
             request.Password,
+            request.ForceRefresh,
             request.IncludeDetails,
             cancellationToken);
 

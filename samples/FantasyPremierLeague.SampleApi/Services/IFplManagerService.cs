@@ -14,6 +14,7 @@ public interface IFplManagerService
     Task<FplManagerRecord?> LoginAsync(
         string email,
         string password,
+        bool forceRefresh,
         bool includeDetails,
         CancellationToken cancellationToken = default);
 
