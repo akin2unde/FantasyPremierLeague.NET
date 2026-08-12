@@ -56,7 +56,7 @@ internal sealed class FplAuthenticationManager : IFplAuthenticationManager
     /// <summary>
     /// Describes the LoginAsync member.
     /// </summary>
-    public async Task<FplManagerRecord> LoginAsync(string email, string password, bool forceRefresh, CancellationToken cancellationToken)
+    public async Task<FplManagerRecord> LoginAsync(string email, string password, bool forceRefresh, bool includeDetails, CancellationToken cancellationToken)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(email); ArgumentException.ThrowIfNullOrWhiteSpace(password);
         email = email.Trim().ToLowerInvariant();
@@ -101,7 +101,7 @@ internal sealed class FplAuthenticationManager : IFplAuthenticationManager
     public async Task<string> RefreshCurrentAsync(CancellationToken cancellationToken)
     {
         if (CurrentManager is null || CurrentManager.Password is null) throw new FplAuthenticationException("The current session cannot be refreshed because credentials are unavailable.");
-        var refreshed = await LoginAsync(CurrentManager.Email, CurrentManager.Password, true, cancellationToken); return refreshed.AccessToken;
+        var refreshed = await LoginAsync(CurrentManager.Email, CurrentManager.Password, true, true, cancellationToken); return refreshed.AccessToken;
     }
     /// <summary>
     /// Provides the SaveCurrentAsync member.

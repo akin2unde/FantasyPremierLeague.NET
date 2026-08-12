@@ -24,10 +24,11 @@ public sealed class FplManagerService : IFplManagerService
     public async Task<FplManagerRecord?> LoginAsync(
         string email,
         string password,
+        bool forceRefresh,
         bool includeDetails,
         CancellationToken cancellationToken = default)
     {
-        var res = await _fplClient.LoginAsync(email, password, includeDetails, cancellationToken);
+        var res = await _fplClient.LoginAsync(email, password, forceRefresh, includeDetails, cancellationToken);
         return res;
     }
 

@@ -96,12 +96,14 @@ public sealed class FplClient
         string email,
         string password,
         bool forceRefresh,
+        bool includeDetails,
         CancellationToken cancellationToken = default)
     {
         return _authenticationManager.LoginAsync(
             email,
             password,
             forceRefresh: forceRefresh,
+            includeDetails,
             cancellationToken);
     }
 
@@ -117,6 +119,7 @@ public sealed class FplClient
             email,
             password,
             forceRefresh: true,
+            includeDetails: true,
             cancellationToken);
     }
 

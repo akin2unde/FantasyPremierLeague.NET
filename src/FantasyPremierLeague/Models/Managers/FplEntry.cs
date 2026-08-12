@@ -66,4 +66,19 @@ public sealed class FplEntry
     /// </summary>
     [JsonPropertyName("joined_time")]
     public DateTimeOffset? JoinedTime { get; set; }
+
+    /// <summary>
+    /// Gets or sets the number of active years.
+    /// </summary>
+    [JsonPropertyName("years_active")]
+    public int? ActiveYears { get; set; }
+
+    /// <summary>
+    /// Gets or sets the name of the manager's country.
+    /// </summary>
+    [JsonPropertyName("player_region_name")]
+    public string? CountryName { get; set; }
+
+
+
 }
