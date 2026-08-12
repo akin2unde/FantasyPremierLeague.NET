@@ -42,4 +42,11 @@ public class FplChip
 
     [JsonPropertyName("stop_event")]
     public int EndGW { get; set; }
+
+    /// <summary>
+    /// Gets or sets status.
+    /// </summary>
+
+    [JsonPropertyName("status_for_entry")]
+    public string? Status { get; set; }
 }

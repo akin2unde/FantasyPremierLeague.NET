@@ -1,5 +1,7 @@
 using FantasyPremierLeague.Managers;
 using FantasyPremierLeague.Models.Bootstrap;
+using FantasyPremierLeague.Models.Managers;
+using FantasyPremierLeague.Models.Teams;
 
 namespace FantasyPremierLeague.SampleApi.Services;
 
@@ -21,7 +23,13 @@ public interface IFplManagerService
     /// <summary>
     /// Gets a persisted manager by entry identifier.
     /// </summary>
-    Task<FplManagerRecord?> GetByEntryIdAsync(
+    Task<FplEntry> GetByEntryIdAsync(
+        int entryId,
+        CancellationToken cancellationToken = default);
+    /// <summary>
+    /// Gets a persisted manager by entry identifier.
+    /// </summary>
+    Task<FplTeamPicks> GetMyTeamAsync(
         int entryId,
         CancellationToken cancellationToken = default);
 

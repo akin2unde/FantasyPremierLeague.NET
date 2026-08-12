@@ -43,14 +43,26 @@ public sealed class FplManagerController : ControllerBase
     /// <summary>
     /// Gets a persisted manager by FPL entry identifier.
     /// </summary>
-    [HttpGet("{entryId:int}")]
-    public async Task<IActionResult> Get(
+    [HttpGet("GetByEntry/{entryId:int}")]
+    public async Task<IActionResult> GetByEntry(
         int entryId,
         CancellationToken cancellationToken)
     {
         var manager = await _service.GetByEntryIdAsync(entryId, cancellationToken);
         return manager is null ? NotFound() : Ok(manager);
     }
+    /// <summary>
+    /// Gets a persisted manager by FPL entry identifier.
+    /// </summary>
+    [HttpGet("GetMyTeam/{entryId:int}")]
+    public async Task<IActionResult> GetMyTeam(
+        int entryId,
+        CancellationToken cancellationToken)
+    {
+        var team = await _service.GetMyTeamAsync(entryId, cancellationToken);
+        return team is null ? NotFound() : Ok(team);
+    }
+
 
     /// <summary>
     /// Gets static boostrap data.
