@@ -41,13 +41,13 @@ public sealed class FplEntryHistory
     /// Gets or sets the bank.
     /// </summary>
     [JsonPropertyName("bank")]
-    public int Bank { get; set; }
+    public float Bank { get; set; }
 
     /// <summary>
-    /// Gets or sets the value.
+    /// Gets or sets the squad value.
     /// </summary>
     [JsonPropertyName("value")]
-    public int Value { get; set; }
+    public float Value { get; set; }
 
     /// <summary>
     /// Gets or sets the event transfers.

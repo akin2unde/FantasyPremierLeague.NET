@@ -13,7 +13,7 @@ public class FplGWTransferInfo
     /// </summary>
 
     [JsonPropertyName("bank")]
-    public int? Bank { get; set; }
+    public float? Bank { get; set; }
 
     /// <summary>
     /// Gets or sets chip name.

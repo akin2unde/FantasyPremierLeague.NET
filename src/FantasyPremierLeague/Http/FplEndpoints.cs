@@ -55,4 +55,9 @@ internal static class FplEndpoints
     /// </summary>
     public const string H2HLeague = "leagues-h2h/{0}/standings/?page_new_entries=1&page_standings={1}";
 
+    /// <summary>
+    /// Describes the member member.
+    /// </summary>
+    public static string PLayerLIVE = "event/{0}/live/";
+
 }
