@@ -47,4 +47,20 @@ public sealed class FplPlayersClient
             $"element-summary/{playerId}/",
             cancellationToken);
     }
+
+    /// <summary>
+    /// Gets details for a player live data.
+    /// </summary>
+    public Task<FplLiveElement> GetPlayerLiveAsync(
+        int gw,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(gw);
+
+        return _httpClient.GetPublicAsync<FplLiveElement>(
+            string.Format(FplEndpoints.PLayerLIVE, gw),
+            cancellationToken);
+    }
+
+
 }
