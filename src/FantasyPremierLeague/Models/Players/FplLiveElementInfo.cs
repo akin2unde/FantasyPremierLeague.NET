@@ -17,6 +17,6 @@ public sealed class FplLiveElementInfo
     /// Gets or sets the singular name.
     /// </summary>
     [JsonPropertyName("explain")]
-    public List<FplElement> Explain { get; set; } = [];
+    public List<FplLiveElementExplain> Explain { get; set; } = [];
 
 }
