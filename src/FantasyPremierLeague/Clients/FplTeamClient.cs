@@ -1,6 +1,7 @@
 using System.Text.Json;
 using FantasyPremierLeague.Http;
 using FantasyPremierLeague.Models.Requests;
+using FantasyPremierLeague.Models.Teams;
 using FantasyPremierLeague.Results;
 
 namespace FantasyPremierLeague.Clients;
@@ -52,4 +53,6 @@ public sealed class FplTeamClient
             FplEndpoints.Transfers, request, cancellationToken);
         return new FplOperationResult { Payload = payload };
     }
+
+
 }

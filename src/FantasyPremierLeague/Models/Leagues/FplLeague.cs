@@ -5,7 +5,7 @@ namespace FantasyPremierLeague.Models.Leagues;
 /// <summary>
 /// Represents fpl classic league standings.
 /// </summary>
-public sealed class FplClassicLeagueStandings
+public sealed class FplLeague
 {
     /// <summary>
     /// Gets or sets the league.
@@ -18,4 +18,11 @@ public sealed class FplClassicLeagueStandings
     /// </summary>
     [JsonPropertyName("standings")]
     public FplStandingsPage? Standings { get; set; }
+
+    /// <summary>
+    /// Gets or sets new entries.
+    /// </summary>
+
+    [JsonPropertyName("new_entries")]
+    public FplStandingsPage? NewEntries { get; set; }
 }

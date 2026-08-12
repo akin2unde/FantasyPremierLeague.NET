@@ -1,5 +1,7 @@
 using FantasyPremierLeague.Managers;
 using FantasyPremierLeague.Models.Bootstrap;
+using FantasyPremierLeague.Models.Managers;
+using FantasyPremierLeague.Models.Teams;
 
 namespace FantasyPremierLeague.SampleApi.Services;
 
@@ -9,15 +11,13 @@ namespace FantasyPremierLeague.SampleApi.Services;
 public sealed class FplManagerService : IFplManagerService
 {
     private readonly FplClient _fplClient;
-    private readonly IFplManagerStore _managerStore;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="FplManagerService"/> class.
     /// </summary>
-    public FplManagerService(FplClient fplClient, IFplManagerStore managerStore)
+    public FplManagerService(FplClient fplClient)
     {
         _fplClient = fplClient;
-        _managerStore = managerStore;
     }
 
     /// <inheritdoc />
@@ -34,10 +34,15 @@ public sealed class FplManagerService : IFplManagerService
 
 
     /// <inheritdoc />
-    public Task<FplManagerRecord?> GetByEntryIdAsync(
+    public Task<FplEntry> GetByEntryIdAsync(
         int entryId,
         CancellationToken cancellationToken = default) =>
-        _managerStore.GetByEntryIdAsync(entryId, cancellationToken);
+        _fplClient.Managers.GetEntryAsync(entryId, cancellationToken);
+
+    public Task<FplTeamPicks> GetMyTeamAsync(
+   int entryId,
+   CancellationToken cancellationToken = default) =>
+   _fplClient.Managers.GetMyTeamAsync(entryId, cancellationToken);
 
     /// <inheritdoc />
     public Task<FplBootstrapStatic> GetBoostrapAsync(

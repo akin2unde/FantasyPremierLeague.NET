@@ -14,6 +14,14 @@ internal static class FplEndpoints
     /// Describes the member member.
     /// </summary>
     public const string Entry = "entry/{0}/";
+
+
+    /// <summary>
+    /// Describes the team info member.
+    /// </summary>
+    public const string Myteam = "my-team/{0}/";
+
+
     /// <summary>
     /// Describes the member member.
     /// </summary>
@@ -41,5 +49,10 @@ internal static class FplEndpoints
     /// <summary>
     /// Describes the member member.
     /// </summary>
-    public const string ClassicLeague = "leagues-classic/{0}/standings/?page_standings={1}";
+    public const string ClassicLeague = "leagues-classic/{0}/standings/?page_new_entries=1&page_standings={1}";
+    /// <summary>
+    /// Describes the member member.
+    /// </summary>
+    public const string H2HLeague = "leagues-h2h/{0}/standings/?page_new_entries=1&page_standings={1}";
+
 }

@@ -37,6 +37,18 @@ public sealed class FplManagersClient
         return _http.GetPublicAsync<FplTeamPicks>(
             string.Format(FplEndpoints.EntryPicks, entryId, gameweek), cancellationToken);
     }
+
+
+    /// <summary>
+    /// Provides the GetMyTeamsAsync member.
+    /// </summary>
+    public Task<FplTeamPicks> GetMyTeamAsync(int entryId, CancellationToken cancellationToken = default)
+    {
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(entryId);
+        return _http.GetAuthenticatedAsync<FplTeamPicks>(
+            string.Format(FplEndpoints.Myteam, entryId), cancellationToken);
+    }
+
     /// <summary>
     /// Provides the GetCurrentAsync member.
     /// </summary>

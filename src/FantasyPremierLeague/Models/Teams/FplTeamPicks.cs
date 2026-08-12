@@ -1,4 +1,5 @@
 using System.Text.Json.Serialization;
+using FantasyPremierLeague.Models.Bootstrap;
 
 namespace FantasyPremierLeague.Models.Teams;
 
@@ -17,7 +18,7 @@ public sealed class FplTeamPicks
     /// Gets or sets the automatic subs.
     /// </summary>
     [JsonPropertyName("automatic_subs")]
-    public List<FplAutomaticSub> AutomaticSubs { get; set; } = [];
+    public List<FplAutomaticSub> PlayerSubs { get; set; } = [];
 
     /// <summary>
     /// Gets or sets the entry history.
@@ -30,4 +31,17 @@ public sealed class FplTeamPicks
     /// </summary>
     [JsonPropertyName("picks")]
     public List<FplPick> Picks { get; set; } = [];
+    /// <summary>
+    /// Gets or sets the chips.
+    /// </summary>
+
+    [JsonPropertyName("chips")]
+    public List<FplChip> Chips { get; set; } = [];
+
+    /// <summary>
+    /// Gets or sets the TeamInfo.
+    /// </summary>
+
+    [JsonPropertyName("transfers")]
+    public FplGWTransferInfo? TeamInfo { get; set; }
 }

@@ -20,14 +20,29 @@ public sealed class FplLeaguesClient
     /// Provides the GetClassicStandingsAsync member.
     /// </summary>
 
-    public Task<FplClassicLeagueStandings> GetClassicStandingsAsync(
+    public Task<FplLeague> GetClassicStandingsAsync(
         int leagueId,
         int page = 1,
         CancellationToken cancellationToken = default)
     {
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(leagueId);
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(page);
-        return _http.GetPublicAsync<FplClassicLeagueStandings>(
+        return _http.GetPublicAsync<FplLeague>(
             string.Format(FplEndpoints.ClassicLeague, leagueId, page), cancellationToken);
+    }
+
+    /// <summary>
+    /// Provides the GetH2HStandingsAsync member.
+    /// </summary>
+
+    public Task<FplLeague> GetH2HStandingsAsync(
+        int leagueId,
+        int page = 1,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(leagueId);
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(page);
+        return _http.GetPublicAsync<FplLeague>(
+            string.Format(FplEndpoints.H2HLeague, leagueId, page), cancellationToken);
     }
 }
