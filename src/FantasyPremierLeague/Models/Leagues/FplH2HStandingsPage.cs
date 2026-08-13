@@ -5,7 +5,7 @@ namespace FantasyPremierLeague.Models.Leagues;
 /// <summary>
 /// Represents fpl standings page.
 /// </summary>
-public sealed class FplStandingsPage
+public sealed class FplH2HStandingsPage
 {
     /// <summary>
     /// Gets or sets the has next.
@@ -23,5 +23,5 @@ public sealed class FplStandingsPage
     /// Gets or sets the results.
     /// </summary>
     [JsonPropertyName("results")]
-    public List<FplStandingEntry> Results { get; set; } = [];
+    public List<FplH2HStandingEntry> Results { get; set; } = [];
 }

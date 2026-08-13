@@ -3,26 +3,22 @@ using System.Text.Json.Serialization;
 namespace FantasyPremierLeague.Models.Leagues;
 
 /// <summary>
-/// Represents fpl classic league standings.
+/// Represents fpl league info.
 /// </summary>
 public sealed class FplLeague
 {
     /// <summary>
-    /// Gets or sets the league.
+    /// Gets or sets the is close.
     /// </summary>
-    [JsonPropertyName("league")]
-    public FplLeagueInfo? League { get; set; }
+    [JsonPropertyName("classic")]
+    public List<FplLeagueInfo> ClassicLeague { get; set; } = [];
 
     /// <summary>
-    /// Gets or sets the standings.
+    /// Gets or sets the date created.
     /// </summary>
-    [JsonPropertyName("standings")]
-    public FplStandingsPage? Standings { get; set; }
+    [JsonPropertyName("h2h")]
+    public List<FplLeagueInfo> H2HLeague { get; set; } = [];
 
-    /// <summary>
-    /// Gets or sets new entries.
-    /// </summary>
 
-    [JsonPropertyName("new_entries")]
-    public FplStandingsPage? NewEntries { get; set; }
+
 }

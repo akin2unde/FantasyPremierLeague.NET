@@ -55,6 +55,12 @@ public sealed class FplLeagueInfo
     public string Rank { get; set; } = string.Empty;
 
     /// <summary>
+    /// Gets or sets the current rank count of the league.
+    /// </summary>
+    [JsonPropertyName("rank_count")]
+    public string RankCount { get; set; } = string.Empty;
+
+    /// <summary>
     /// Gets or sets the current rank of the manager's entry within the league.
     /// </summary>
     [JsonPropertyName("entry_rank")]
@@ -81,5 +87,11 @@ public sealed class FplLeagueInfo
     /// </summary>
     [JsonPropertyName("has_cup")]
     public bool HasCup { get; set; }
+
+    /// <summary>
+    /// Gets or sets start event .
+    /// </summary>
+    [JsonPropertyName("start_event")]
+    public bool StartEvent { get; set; }
 
 }
