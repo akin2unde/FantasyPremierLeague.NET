@@ -42,7 +42,7 @@ public sealed class FplH2HStandingEntry
     /// Gets or sets the total fpl point.
     /// </summary>
     [JsonPropertyName("total")]
-    public int OveralTotal { get; set; }
+    public int OverallTotal { get; set; }
 
 
     /// <summary>

@@ -11,7 +11,7 @@ public sealed class FplLeagueInfo
     /// Gets or sets the is close.
     /// </summary>
     [JsonPropertyName("closed")]
-    public int IsClose { get; set; }
+    public bool IsClose { get; set; }
 
     /// <summary>
     /// Gets or sets the date created.
@@ -64,7 +64,7 @@ public sealed class FplLeagueInfo
     /// Gets or sets the current rank of the manager's entry within the league.
     /// </summary>
     [JsonPropertyName("entry_rank")]
-    public string EntryRank { get; set; } = string.Empty;
+    public int EntryRank { get; set; }
 
     /// <summary>
     /// Gets or sets the manager's previous rank within the league.
@@ -74,7 +74,7 @@ public sealed class FplLeagueInfo
     /// allowing movement in league position to be determined.
     /// </remarks>
     [JsonPropertyName("entry_last_rank")]
-    public string LastRank { get; set; } = string.Empty;
+    public int LastRank { get; set; }
 
     /// <summary>
     /// Gets or sets the admin id.
@@ -92,6 +92,6 @@ public sealed class FplLeagueInfo
     /// Gets or sets start event .
     /// </summary>
     [JsonPropertyName("start_event")]
-    public bool StartEvent { get; set; }
+    public int StartEvent { get; set; }
 
 }
