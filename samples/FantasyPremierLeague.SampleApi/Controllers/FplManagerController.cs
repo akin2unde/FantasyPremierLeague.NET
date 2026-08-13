@@ -74,4 +74,39 @@ public sealed class FplManagerController : ControllerBase
         var manager = await _service.GetBoostrapAsync(cancellationToken);
         return manager is null ? NotFound() : Ok(manager);
     }
+
+    /// <summary>
+    /// Gets static boostrap data.
+    /// </summary>
+    [HttpGet("GetMyLeague/{managerId}")]
+    public async Task<IActionResult> GetMyLeague(
+        int managerId,
+        CancellationToken cancellationToken)
+    {
+        var manager = await _service.GetMyLeagueAsync(managerId, cancellationToken);
+        return manager is null ? NotFound() : Ok(manager);
+    }
+
+    /// <summary>
+    /// Gets static boostrap data.
+    /// </summary>
+    [HttpGet("GetClassicLeague/{league}")]
+    public async Task<IActionResult> GetClassicLeague(
+        int league,
+        CancellationToken cancellationToken)
+    {
+        var manager = await _service.GetClassicLeagueAsync(league, cancellationToken);
+        return manager is null ? NotFound() : Ok(manager);
+    }
+    /// <summary>
+    /// Gets static boostrap data.
+    /// </summary>
+    [HttpGet("GetH2HLeague/{league}")]
+    public async Task<IActionResult> GetH2HLeague(
+        int league,
+        CancellationToken cancellationToken)
+    {
+        var manager = await _service.GetH2HLeagueAsync(league, cancellationToken);
+        return manager is null ? NotFound() : Ok(manager);
+    }
 }

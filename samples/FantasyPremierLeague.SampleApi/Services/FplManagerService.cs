@@ -1,5 +1,6 @@
 using FantasyPremierLeague.Managers;
 using FantasyPremierLeague.Models.Bootstrap;
+using FantasyPremierLeague.Models.Leagues;
 using FantasyPremierLeague.Models.Managers;
 using FantasyPremierLeague.Models.Teams;
 
@@ -49,5 +50,18 @@ public sealed class FplManagerService : IFplManagerService
         CancellationToken cancellationToken = default) =>
         _fplClient.Boostrap.GetDataAsync(cancellationToken);
 
+    public Task<FplClassicLeague> GetClassicLeagueAsync(int leagueId, CancellationToken cancellationToken = default)
+    {
+        return _fplClient.Leagues.GetClassicStandingsAsync(leagueId, 1, cancellationToken);
+    }
 
+    public Task<FplH2HLeague> GetH2HLeagueAsync(int leagueId, CancellationToken cancellationToken = default)
+    {
+        return _fplClient.Leagues.GetH2HStandingsAsync(leagueId, 1, cancellationToken);
+    }
+
+    public async Task<FplLeague?> GetMyLeagueAsync(int managerId, CancellationToken cancellationToken = default)
+    {
+        return await _fplClient.Leagues.GetMyLeagueAsync(managerId, cancellationToken);
+    }
 }

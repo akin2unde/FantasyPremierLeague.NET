@@ -1,5 +1,6 @@
 using FantasyPremierLeague.Managers;
 using FantasyPremierLeague.Models.Bootstrap;
+using FantasyPremierLeague.Models.Leagues;
 using FantasyPremierLeague.Models.Managers;
 using FantasyPremierLeague.Models.Teams;
 
@@ -37,5 +38,26 @@ public interface IFplManagerService
     /// Gets boosrap static file.
     /// </summary>
     Task<FplBootstrapStatic> GetBoostrapAsync(
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Gets a persisted manager by entry identifier.
+    /// </summary>
+    Task<FplClassicLeague> GetClassicLeagueAsync(
+        int leagueId,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Gets a persisted manager by entry identifier.
+    /// </summary>
+    Task<FplH2HLeague> GetH2HLeagueAsync(
+        int leagueId,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Gets a persisted manager by entry identifier.
+    /// </summary>
+    Task<FplLeague?> GetMyLeagueAsync(
+        int managerId,
         CancellationToken cancellationToken = default);
 }
