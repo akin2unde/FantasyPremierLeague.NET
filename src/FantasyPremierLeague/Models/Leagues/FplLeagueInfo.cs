@@ -80,7 +80,7 @@ public sealed class FplLeagueInfo
     /// Gets or sets the admin id.
     /// </summary>
     [JsonPropertyName("admin_entry")]
-    public int AdminEntry { get; set; }
+    public int? AdminEntry { get; set; }
 
     /// <summary>
     /// Gets or sets has cup.

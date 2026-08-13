@@ -74,4 +74,17 @@ public sealed class FplH2HStandingEntry
     /// </summary>
     [JsonPropertyName("matches_lost")]
     public int Lost { get; set; }
+
+
+    /// <summary>
+    /// Gets or sets the player first name.
+    /// </summary>
+    [JsonPropertyName("player_first_name")]
+    public string FirstName { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Gets or sets the player last name.
+    /// </summary>
+    [JsonPropertyName("player_last_name")]
+    public string LastName { get; set; } = string.Empty;
 }
