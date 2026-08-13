@@ -11,12 +11,12 @@ public sealed class FplLiveElementExplain
     /// Gets or sets the fixture.
     /// </summary>
     [JsonPropertyName("fixture")]
-    public FplElement? PlayerStats { get; set; }
+    public string? Fixture { get; set; }
 
     /// <summary>
     /// Gets or sets the stats.
     /// </summary>
     [JsonPropertyName("stats")]
-    public List<FplElementStats> Explain { get; set; } = [];
+    public List<FplElementStats> PlayerStats { get; set; } = [];
 
 }

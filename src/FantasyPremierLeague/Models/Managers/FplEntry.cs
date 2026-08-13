@@ -1,4 +1,5 @@
 using System.Text.Json.Serialization;
+using FantasyPremierLeague.Models.Leagues;
 
 namespace FantasyPremierLeague.Models.Managers;
 
@@ -79,6 +80,10 @@ public sealed class FplEntry
     [JsonPropertyName("player_region_name")]
     public string? CountryName { get; set; }
 
-
+    /// <summary>
+    /// Gets or sets the manager's leagues.
+    /// </summary>
+    [JsonPropertyName("leagues")]
+    public FplLeague? Leagues { get; set; }
 
 }
