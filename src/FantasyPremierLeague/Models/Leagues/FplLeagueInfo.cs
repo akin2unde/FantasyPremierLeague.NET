@@ -64,7 +64,7 @@ public sealed class FplLeagueInfo
     /// Gets or sets the current rank of the manager's entry within the league.
     /// </summary>
     [JsonPropertyName("entry_rank")]
-    public int EntryRank { get; set; }
+    public int? EntryRank { get; set; }
 
     /// <summary>
     /// Gets or sets the manager's previous rank within the league.
@@ -74,7 +74,7 @@ public sealed class FplLeagueInfo
     /// allowing movement in league position to be determined.
     /// </remarks>
     [JsonPropertyName("entry_last_rank")]
-    public int LastRank { get; set; }
+    public int? LastRank { get; set; }
 
     /// <summary>
     /// Gets or sets the admin id.
@@ -93,5 +93,11 @@ public sealed class FplLeagueInfo
     /// </summary>
     [JsonPropertyName("start_event")]
     public int StartEvent { get; set; }
+
+    /// <summary>
+    /// Gets or sets rank percentage .
+    /// </summary>
+    [JsonPropertyName("entry_percentile_rank")]
+    public string RankPercentage { get; set; } = string.Empty;
 
 }
