@@ -10,6 +10,12 @@ public sealed class FplClassicStandingEntry
     /// <summary>
     /// Gets or sets the entry.
     /// </summary>
+    [JsonPropertyName("id")]
+    public int? Id { get; set; }
+
+    /// <summary>
+    /// Gets or sets the entry.
+    /// </summary>
     [JsonPropertyName("entry")]
     public int Manager { get; set; }
 
@@ -29,7 +35,20 @@ public sealed class FplClassicStandingEntry
     /// Gets or sets the rank.
     /// </summary>
     [JsonPropertyName("rank")]
-    public int Rank { get; set; }
+    public int? Rank { get; set; }
+
+
+    /// <summary>
+    /// Gets or sets the last gw rank.
+    /// </summary>
+    [JsonPropertyName("last_rank")]
+    public int? LastRank { get; set; }
+
+    /// <summary>
+    /// Gets or sets the last gw rank.
+    /// </summary>
+    [JsonPropertyName("rank_sort")]
+    public int? RankSort { get; set; }
 
     /// <summary>
     /// Gets or sets the total.
@@ -37,9 +56,15 @@ public sealed class FplClassicStandingEntry
     [JsonPropertyName("total")]
     public int Total { get; set; }
 
+    /// <summary>
+    /// Gets or sets the total.
+    /// </summary>
+    [JsonPropertyName("event_total")]
+    public int GWTotal { get; set; }
+
 
     /// <summary>
-    /// Gets or sets the player first name.
+    /// Gets or sets the gw total.
     /// </summary>
     [JsonPropertyName("player_first_name")]
     public string FirstName { get; set; } = string.Empty;
@@ -49,4 +74,10 @@ public sealed class FplClassicStandingEntry
     /// </summary>
     [JsonPropertyName("player_last_name")]
     public string LastName { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Gets or sets the date player joined the league .
+    /// </summary>
+    [JsonPropertyName("joined_time")]
+    public DateTimeOffset? DateJoined { get; set; }
 }
