@@ -66,4 +66,10 @@ public sealed class FplEntryHistory
     /// </summary>
     [JsonPropertyName("points_on_bench")]
     public int PointsOnBench { get; set; }
+
+    /// <summary>
+    /// Gets or sets the percentage rank.
+    /// </summary>
+    [JsonPropertyName("percentile_rank")]
+    public int? PercentageRank { get; set; }
 }
