@@ -49,4 +49,6 @@ public class FplGWTransferInfo
     /// </summary>
     [JsonPropertyName("value")]
     public float SquadValue { get { return _value; } set { _value = value; } }
+
+
 }
