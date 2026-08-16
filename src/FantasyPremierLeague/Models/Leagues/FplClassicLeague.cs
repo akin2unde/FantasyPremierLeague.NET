@@ -25,4 +25,10 @@ public sealed class FplClassicLeague
 
     [JsonPropertyName("new_entries")]
     public FplClassicStandingsPage? NewEntries { get; set; }
+    /// <summary>
+    /// Gets or sets last time the league was updated.
+    /// </summary>
+
+    [JsonPropertyName("last_updated_data")]
+    public DateTimeOffset? LastUpdatedAt { get; set; }
 }
