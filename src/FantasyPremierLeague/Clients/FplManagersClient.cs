@@ -49,6 +49,8 @@ public sealed class FplManagersClient
             string.Format(FplEndpoints.Myteam, entryId), cancellationToken);
     }
 
+
+
     /// <summary>
     /// Provides the GetCurrentAsync member.
     /// </summary>

@@ -72,4 +72,6 @@ public sealed class FplEntryHistory
     /// </summary>
     [JsonPropertyName("percentile_rank")]
     public int? PercentageRank { get; set; }
+
+
 }
