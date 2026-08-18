@@ -50,5 +50,9 @@ public class FplGWTransferInfo
     [JsonPropertyName("value")]
     public float SquadValue { get { return _value; } set { _value = value; } }
 
-
+    /// <summary>
+    /// Gets or sets the percentage rank.
+    /// </summary>
+    [JsonPropertyName("percentile_rank")]
+    public int? PercentageRank { get; set; }
 }

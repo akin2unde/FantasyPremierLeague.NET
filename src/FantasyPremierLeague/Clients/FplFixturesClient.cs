@@ -35,12 +35,12 @@ public sealed class FplFixturesClient
         return _http.GetPublicAsync<List<FplFixture>>(path, cancellationToken);
     }
     /// <summary>
-    /// Provides the GetByIdAsync member.
+    /// Provides the GetByCodeAsync member.
     /// </summary>
 
-    public async Task<FplFixture?> GetByIdAsync(int id, CancellationToken cancellationToken = default)
+    public async Task<FplFixture?> GetByCodeAsync(int code, CancellationToken cancellationToken = default)
     {
         var all = await GetAllAsync(cancellationToken);
-        return all.FirstOrDefault(_ => _.Id == id);
+        return all.FirstOrDefault(_ => _.FixtureCode == code);
     }
 }
