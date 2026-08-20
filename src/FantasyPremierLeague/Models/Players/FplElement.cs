@@ -460,14 +460,11 @@ public class FplElement
     /// Gets or sets the player's current FPL price.
     /// </summary>
     /// <remarks>
-    /// The value returned by the FPL API is stored internally and divided
-    /// by 10 when this property is read.
-    /// For example, a raw <c>now_cost</c> value of 125 is exposed as 12.5.
     /// </remarks>
     [JsonPropertyName("now_cost")]
     public float Price
     {
-        get { return price / 10; }
+        get { return price; }
         set { price = value; }
     }
 
