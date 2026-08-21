@@ -11,7 +11,7 @@ public sealed class FplLiveElementExplain
     /// Gets or sets the fixture.
     /// </summary>
     [JsonPropertyName("fixture")]
-    public string? Fixture { get; set; }
+    public int? Fixture { get; set; }
 
     /// <summary>
     /// Gets or sets the stats.

@@ -2,6 +2,7 @@ using FantasyPremierLeague.Managers;
 using FantasyPremierLeague.Models.Bootstrap;
 using FantasyPremierLeague.Models.Leagues;
 using FantasyPremierLeague.Models.Managers;
+using FantasyPremierLeague.Models.Players;
 using FantasyPremierLeague.Models.Teams;
 
 namespace FantasyPremierLeague.SampleApi.Services;
@@ -63,5 +64,10 @@ public sealed class FplManagerService : IFplManagerService
     public async Task<FplLeague?> GetMyLeagueAsync(int managerId, CancellationToken cancellationToken = default)
     {
         return await _fplClient.Leagues.GetMyLeagueAsync(managerId, cancellationToken);
+    }
+
+    public async Task<FplLiveElement?> GetLivePlayerDataAsync(int gw, CancellationToken cancellationToken = default)
+    {
+        return await _fplClient.Players.GetPlayerLiveAsync(gw, cancellationToken);
     }
 }
