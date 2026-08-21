@@ -67,34 +67,34 @@ public class FplGameweek
     /// Gets or sets most captained player id for the gw.
     /// </summary>
     [JsonPropertyName("most_captained")]
-    public string MostCaptainId { get; set; } = string.Empty;
+    public int? MostCaptainId { get; set; }
 
 
     /// <summary>
     /// Gets or sets most selected player id for the gw.
     /// </summary>
     [JsonPropertyName("most_selected")]
-    public string MostSelectedId { get; set; } = string.Empty;
+    public int? MostSelectedId { get; set; }
 
 
     /// <summary>
     /// Gets or sets most transferred in player id for the gw.
     /// </summary>
     [JsonPropertyName("most_transferred_in")]
-    public string MostTransferredInId { get; set; } = string.Empty;
+    public int? MostTransferredInId { get; set; }
     /// <summary>
     /// Gets or sets most vice captained player id for the gw.
     /// </summary>
 
     [JsonPropertyName("most_vice_captained")]
-    public string MostVCaptainId { get; set; } = string.Empty;
+    public int? MostVCaptainId { get; set; }
 
 
     /// <summary>
     /// Gets or sets top player id for the gw.
     /// </summary>
     [JsonPropertyName("top_element")]
-    public string TopElementId { get; set; } = string.Empty;
+    public int? TopElementId { get; set; }
 
     /// <summary>
     /// Gets or sets cup leagues created.
