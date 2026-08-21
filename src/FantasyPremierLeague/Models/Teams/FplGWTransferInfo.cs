@@ -27,7 +27,7 @@ public class FplGWTransferInfo
     /// </summary>
 
     [JsonPropertyName("limit")]
-    public string? TranferAvailable { get; set; }
+    public int? TranferAvailable { get; set; }
 
     /// <summary>
     /// Gets or sets start event gw number.
