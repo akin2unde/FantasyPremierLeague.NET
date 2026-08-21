@@ -28,7 +28,7 @@ public sealed class FplElementStats
     /// Gets or sets the value associated with the player statistic.
     /// </summary>
     [JsonPropertyName("value")]
-    public string Value { get; set; } = string.Empty;
+    public int Value { get; set; }
 
     /// <summary>
     /// Gets or sets the identifier used to uniquely identify the
@@ -41,5 +41,5 @@ public sealed class FplElementStats
     /// Gets or sets the points associated with the player statistic.
     /// </summary>
     [JsonPropertyName("points")]
-    public string Point { get; set; } = string.Empty;
+    public int? Point { get; set; }
 }
