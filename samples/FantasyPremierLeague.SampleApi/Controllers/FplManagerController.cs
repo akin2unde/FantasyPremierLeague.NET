@@ -109,4 +109,15 @@ public sealed class FplManagerController : ControllerBase
         var manager = await _service.GetH2HLeagueAsync(league, cancellationToken);
         return manager is null ? NotFound() : Ok(manager);
     }
+    /// <summary>
+    /// Gets static boostrap data.
+    /// </summary>
+    [HttpGet("GetLivePlayerData/{gw}")]
+    public async Task<IActionResult> GetLivePlayerData(
+        int gw,
+        CancellationToken cancellationToken)
+    {
+        var data = await _service.GetLivePlayerDataAsync(gw, cancellationToken);
+        return Ok(data);
+    }
 }

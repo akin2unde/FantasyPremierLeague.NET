@@ -2,6 +2,7 @@ using FantasyPremierLeague.Managers;
 using FantasyPremierLeague.Models.Bootstrap;
 using FantasyPremierLeague.Models.Leagues;
 using FantasyPremierLeague.Models.Managers;
+using FantasyPremierLeague.Models.Players;
 using FantasyPremierLeague.Models.Teams;
 
 namespace FantasyPremierLeague.SampleApi.Services;
@@ -59,5 +60,12 @@ public interface IFplManagerService
     /// </summary>
     Task<FplLeague?> GetMyLeagueAsync(
         int managerId,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Gets a live player data.
+    /// </summary>
+    Task<FplLiveElement?> GetLivePlayerDataAsync(
+        int gw,
         CancellationToken cancellationToken = default);
 }
