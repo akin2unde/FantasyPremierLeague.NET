@@ -8,6 +8,17 @@ namespace FantasyPremierLeague.Models.Players;
 public sealed class FplLiveElementInfo
 {
     /// <summary>
+    /// Gets or sets the modified.
+    /// </summary>
+    [JsonPropertyName("modified")]
+    public bool Modified { get; set; }
+    /// <summary>
+    /// Gets or sets the id.
+    /// </summary>
+    [JsonPropertyName("id")]
+    public int? Element { get; set; }
+
+    /// <summary>
     /// Gets or sets the stats.
     /// </summary>
     [JsonPropertyName("stats")]
