@@ -68,4 +68,11 @@ public interface IFplManagerService
     Task<FplLiveElement?> GetLivePlayerDataAsync(
         int gw,
         CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Gets a dream team.
+    /// </summary>
+    Task<FplDreamTeam?> GetDreamTeamDataAsync(
+        int gw,
+        CancellationToken cancellationToken = default);
 }

@@ -70,4 +70,8 @@ public sealed class FplManagerService : IFplManagerService
     {
         return await _fplClient.Players.GetPlayerLiveAsync(gw, cancellationToken);
     }
+    public async Task<FplDreamTeam?> GetDreamTeamDataAsync(int gw, CancellationToken cancellationToken = default)
+    {
+        return await _fplClient.Players.GetGWDreamTeamAsync(gw, cancellationToken);
+    }
 }

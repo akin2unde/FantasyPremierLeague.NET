@@ -62,5 +62,19 @@ public sealed class FplPlayersClient
             cancellationToken);
     }
 
+    /// <summary>
+    /// Gets details for dream team in a particular gw.
+    /// </summary>
+    public Task<FplDreamTeam> GetGWDreamTeamAsync(
+        int gw,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(gw);
+
+        return _httpClient.GetPublicAsync<FplDreamTeam>(
+            string.Format(FplEndpoints.DreamTeam, gw),
+            cancellationToken);
+    }
+
 
 }
