@@ -132,4 +132,16 @@ public sealed class FplManagerController : ControllerBase
         var data = await _service.GetDreamTeamDataAsync(gw, cancellationToken);
         return Ok(data);
     }
+
+    /// <summary>
+    /// Gets dream team.
+    /// </summary>
+    [HttpGet("GetFixtureByGW/{gw}")]
+    public async Task<IActionResult> GetFixtureByGW(
+        int gw,
+        CancellationToken cancellationToken)
+    {
+        var data = await _service.GetFixtureByGWAsync(gw, cancellationToken);
+        return Ok(data);
+    }
 }

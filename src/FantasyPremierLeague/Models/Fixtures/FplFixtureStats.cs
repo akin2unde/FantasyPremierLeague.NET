@@ -13,7 +13,7 @@ public class FplFixtureStatElement
     /// Gets or sets the value of the fixture statistic recorded for the player.
     /// </summary>
     [JsonPropertyName("value")]
-    public string Value { get; set; } = string.Empty;
+    public int Value { get; set; }
 
     /// <summary>
     /// Gets or sets the unique FPL identifier of the player
