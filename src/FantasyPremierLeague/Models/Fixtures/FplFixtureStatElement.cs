@@ -27,14 +27,11 @@ public class FplFixtureStats
     /// associated with the away team.
     /// </summary>
     [JsonPropertyName("a")]
-    public ICollection<FplFixtureStatElement> Away { get; set; }
-        = new List<FplFixtureStatElement>();
-
+    public List<FplFixtureStatElement> Away { get; set; } = [];
     /// <summary>
     /// Gets or sets the collection of player statistic elements
     /// associated with the home team.
     /// </summary>
     [JsonPropertyName("h")]
-    public ICollection<FplFixtureStatElement> Home { get; set; }
-        = new List<FplFixtureStatElement>();
+    public List<FplFixtureStatElement> Home { get; set; } = [];
 }

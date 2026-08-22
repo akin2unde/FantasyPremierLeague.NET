@@ -95,7 +95,7 @@ public class FplFixture
     /// Gets or sets the game week stat info .
     /// </summary>
     [JsonPropertyName("stats")]
-    public List<FplFixtureStatElement> GameStats { get; set; } = [];
+    public List<FplFixtureStats> GameStats { get; set; } = [];
     /// <summary>
     /// Gets or sets opponent difficulty .
     /// </summary>

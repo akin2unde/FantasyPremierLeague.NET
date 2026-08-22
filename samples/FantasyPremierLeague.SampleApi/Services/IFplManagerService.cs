@@ -1,5 +1,6 @@
 using FantasyPremierLeague.Managers;
 using FantasyPremierLeague.Models.Bootstrap;
+using FantasyPremierLeague.Models.Fixtures;
 using FantasyPremierLeague.Models.Leagues;
 using FantasyPremierLeague.Models.Managers;
 using FantasyPremierLeague.Models.Players;
@@ -73,6 +74,13 @@ public interface IFplManagerService
     /// Gets a dream team.
     /// </summary>
     Task<FplDreamTeam?> GetDreamTeamDataAsync(
+        int gw,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Gets a fixture
+    /// </summary>
+    Task<List<FplFixture>> GetFixtureByGWAsync(
         int gw,
         CancellationToken cancellationToken = default);
 }
