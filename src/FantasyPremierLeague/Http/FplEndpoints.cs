@@ -60,4 +60,11 @@ internal static class FplEndpoints
     /// </summary>
     public static string PLayerLIVE = "event/{0}/live/";
 
+    /// <summary>
+    /// Describes the member member.
+    /// </summary>
+    public static string DreamTeam = "dream-team/{0}/";
+
+
+
 }

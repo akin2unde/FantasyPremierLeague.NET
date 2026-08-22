@@ -52,13 +52,13 @@ public sealed class FplLeagueInfo
     /// Gets or sets the current rank of the league.
     /// </summary>
     [JsonPropertyName("rank")]
-    public string Rank { get; set; } = string.Empty;
+    public int? Rank { get; set; }
 
     /// <summary>
     /// Gets or sets the current rank count of the league.
     /// </summary>
     [JsonPropertyName("rank_count")]
-    public string RankCount { get; set; } = string.Empty;
+    public int? RankCount { get; set; }
 
     /// <summary>
     /// Gets or sets the current rank of the manager's entry within the league.
@@ -98,6 +98,6 @@ public sealed class FplLeagueInfo
     /// Gets or sets rank percentage .
     /// </summary>
     [JsonPropertyName("entry_percentile_rank")]
-    public string RankPercentage { get; set; } = string.Empty;
+    public int? RankPercentage { get; set; }
 
 }

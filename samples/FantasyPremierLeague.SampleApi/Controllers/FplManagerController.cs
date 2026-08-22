@@ -110,7 +110,7 @@ public sealed class FplManagerController : ControllerBase
         return manager is null ? NotFound() : Ok(manager);
     }
     /// <summary>
-    /// Gets static boostrap data.
+    /// Gets player's live data.
     /// </summary>
     [HttpGet("GetLivePlayerData/{gw}")]
     public async Task<IActionResult> GetLivePlayerData(
@@ -118,6 +118,18 @@ public sealed class FplManagerController : ControllerBase
         CancellationToken cancellationToken)
     {
         var data = await _service.GetLivePlayerDataAsync(gw, cancellationToken);
+        return Ok(data);
+    }
+
+    /// <summary>
+    /// Gets dream team.
+    /// </summary>
+    [HttpGet("GetDreamTeamData/{gw}")]
+    public async Task<IActionResult> GetDreamTeamData(
+        int gw,
+        CancellationToken cancellationToken)
+    {
+        var data = await _service.GetDreamTeamDataAsync(gw, cancellationToken);
         return Ok(data);
     }
 }
