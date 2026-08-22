@@ -54,7 +54,7 @@ public class FplGameweek
     /// </summary>
 
     [JsonPropertyName("highest_score")]
-    public string HighestScore { get; set; } = string.Empty;
+    public int? HighestScore { get; set; }
 
     /// <summary>
     /// Gets or sets data checked.
