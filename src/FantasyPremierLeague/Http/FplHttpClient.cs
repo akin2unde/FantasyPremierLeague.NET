@@ -10,6 +10,8 @@ namespace FantasyPremierLeague.Http;
 /// </summary>
 public sealed class FplHttpClient
 {
+    private const string MaintenanceMessage =
+      "The game is being updated.";
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
     private readonly HttpClient _httpClient;
     private readonly IFplAuthenticationManager _authenticationManager;
@@ -88,6 +90,19 @@ public sealed class FplHttpClient
         if (!response.IsSuccessStatusCode)
         {
             var responseBody = await response.Content.ReadAsStringAsync(cancellationToken);
+
+            var normalizedBody = responseBody
+                .Trim()
+                .Trim('"');
+
+            if (normalizedBody.Contains(
+                    MaintenanceMessage,
+                    StringComparison.OrdinalIgnoreCase))
+            {
+                response.Dispose();
+
+                throw new FplMaintenanceException();
+            }
             throw new FplException(
                 $"FPL returned {(int)response.StatusCode} ({response.ReasonPhrase}) for '{path}'. Body: {responseBody}");
         }
