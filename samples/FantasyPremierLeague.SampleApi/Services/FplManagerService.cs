@@ -79,4 +79,9 @@ public sealed class FplManagerService : IFplManagerService
     {
         return await _fplClient.Fixtures.GetByGWAsync(gw, cancellationToken);
     }
+
+    public async Task<FplH2HMatchesResponse> GetH2HFixtureAsync(int leagueId, int gw, int page = 1, CancellationToken cancellationToken = default)
+    {
+        return await _fplClient.Leagues.GetH2HFixtureAsync(leagueId, gw, page, cancellationToken);
+    }
 }

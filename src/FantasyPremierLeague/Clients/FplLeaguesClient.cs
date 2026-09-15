@@ -58,6 +58,22 @@ public sealed class FplLeaguesClient
             string.Format(FplEndpoints.H2HLeague, leagueId, page), cancellationToken);
     }
 
+    /// <summary>
+    /// Provides the GetH2HStandingsAsync member.
+    /// </summary>
+    public Task<FplH2HMatchesResponse> GetH2HFixtureAsync(
+        int leagueId,
+        int gw,
+        int page = 1,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(leagueId);
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(gw);
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(page);
+        return _http.GetPublicAsync<FplH2HMatchesResponse>(
+            string.Format(FplEndpoints.H2HFixture, leagueId, page, gw), cancellationToken);
+    }
+
 
     /// <summary>
     /// Provides the GetMyLeagueAsync member.

@@ -8,6 +8,12 @@ namespace FantasyPremierLeague.Models.Leagues;
 public sealed class FplH2HStandingEntry
 {
     /// <summary>
+    /// Gets or sets the Id.
+    /// </summary>
+    [JsonPropertyName("id")]
+    public int Id { get; set; }
+
+    /// <summary>
     /// Gets or sets the entry.
     /// </summary>
     [JsonPropertyName("entry")]
@@ -26,6 +32,18 @@ public sealed class FplH2HStandingEntry
     public string FullName { get; set; } = string.Empty;
 
     /// <summary>
+    /// Gets or sets the last rank.
+    /// </summary>
+    [JsonPropertyName("last_rank")]
+    public int? LastRank { get; set; }
+
+    /// <summary>
+    /// Gets or sets the rank sort.
+    /// </summary>
+    [JsonPropertyName("rank_sort")]
+    public int? RankSort { get; set; }
+
+    /// <summary>
     /// Gets or sets the rank.
     /// </summary>
     [JsonPropertyName("rank")]
@@ -34,14 +52,14 @@ public sealed class FplH2HStandingEntry
     /// <summary>
     /// Gets or sets the total h2h point.
     /// </summary>
-    [JsonPropertyName("points_total")]
+    [JsonPropertyName("total")]
     public int Total { get; set; }
 
 
     /// <summary>
     /// Gets or sets the total fpl point.
     /// </summary>
-    [JsonPropertyName("total")]
+    [JsonPropertyName("points_for")]
     public int OverallTotal { get; set; }
 
 

@@ -144,4 +144,18 @@ public sealed class FplManagerController : ControllerBase
         var data = await _service.GetFixtureByGWAsync(gw, cancellationToken);
         return Ok(data);
     }
+
+    /// <summary>
+    /// Gets h2h fixture.
+    /// </summary>
+    [HttpGet("GetH2HFixtureAsync/{league}/{gw}/{page?}")]
+    public async Task<IActionResult> GetH2HFixtureAsync(
+        int league,
+        int gw,
+        int page,
+        CancellationToken cancellationToken)
+    {
+        var data = await _service.GetH2HFixtureAsync(league, gw, page, cancellationToken);
+        return Ok(data);
+    }
 }
