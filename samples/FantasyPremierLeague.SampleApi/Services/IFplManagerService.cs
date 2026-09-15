@@ -57,6 +57,15 @@ public interface IFplManagerService
         CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// Gets a H2H fixture.
+    /// </summary>
+    Task<FplH2HMatchesResponse> GetH2HFixtureAsync(
+        int leagueId,
+        int gw,
+        int page = 1,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Gets a persisted manager by entry identifier.
     /// </summary>
     Task<FplLeague?> GetMyLeagueAsync(

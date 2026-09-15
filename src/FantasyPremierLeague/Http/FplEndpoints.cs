@@ -58,6 +58,12 @@ internal static class FplEndpoints
     /// <summary>
     /// Describes the member member.
     /// </summary>
+    public const string H2HFixture = "leagues-h2h-matches/league/{0}/?page={1}&event={2}";
+
+
+    /// <summary>
+    /// Describes the member member.
+    /// </summary>
     public static string PLayerLIVE = "event/{0}/live/";
 
     /// <summary>
