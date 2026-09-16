@@ -50,6 +50,11 @@ internal static class FplEndpoints
     /// Provides the member member.
     /// </summary>
     public const string Transfers = "transfers/";
+
+    /// <summary>
+    /// Provides the member member.
+    /// </summary>
+    public const string TransferHistory = "entry/{0}/transfers/";
     /// <summary>
     /// Describes the member member.
     /// </summary>
