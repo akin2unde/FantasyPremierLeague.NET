@@ -42,10 +42,10 @@ public sealed class FplManagersClient
     /// Provides the tranfer history.
     /// </summary>
 
-    public Task<FplEntryTransferHistory> GetManagerTransferHistoryAsync(int entryId, CancellationToken cancellationToken = default)
+    public Task<List<FplEntryTransferHistory>> GetManagerTransferHistoryAsync(int entryId, CancellationToken cancellationToken = default)
     {
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(entryId);
-        return _http.GetPublicAsync<FplEntryTransferHistory>(
+        return _http.GetPublicAsync<List<FplEntryTransferHistory>>(
             string.Format(FplEndpoints.TransferHistory, entryId), cancellationToken);
     }
 
