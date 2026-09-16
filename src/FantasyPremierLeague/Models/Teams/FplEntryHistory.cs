@@ -11,13 +11,13 @@ public sealed class FplEntryHistory
     /// Gets or sets the event.
     /// </summary>
     [JsonPropertyName("event")]
-    public int Event { get; set; }
+    public int GW { get; set; }
 
     /// <summary>
     /// Gets or sets the points.
     /// </summary>
     [JsonPropertyName("points")]
-    public int Points { get; set; }
+    public int GWPoint { get; set; }
 
     /// <summary>
     /// Gets or sets the total points.
@@ -47,19 +47,19 @@ public sealed class FplEntryHistory
     /// Gets or sets the squad value.
     /// </summary>
     [JsonPropertyName("value")]
-    public float Value { get; set; }
+    public float TeamValue { get; set; }
 
     /// <summary>
     /// Gets or sets the event transfers.
     /// </summary>
     [JsonPropertyName("event_transfers")]
-    public int EventTransfers { get; set; }
+    public int GWTransfers { get; set; }
 
     /// <summary>
     /// Gets or sets the event transfers cost.
     /// </summary>
     [JsonPropertyName("event_transfers_cost")]
-    public int EventTransfersCost { get; set; }
+    public int GWTransfersCost { get; set; }
 
     /// <summary>
     /// Gets or sets the points on bench.

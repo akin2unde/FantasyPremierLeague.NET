@@ -84,4 +84,9 @@ public sealed class FplManagerService : IFplManagerService
     {
         return await _fplClient.Leagues.GetH2HFixtureAsync(leagueId, gw, page, cancellationToken);
     }
+
+    public async Task<FplEntryHistoryReponse> GetMySeasonHistoryAsync(int managerId, CancellationToken cancellationToken = default)
+    {
+        return await _fplClient.Managers.GetMyGWHistoryAsync(managerId, cancellationToken);
+    }
 }

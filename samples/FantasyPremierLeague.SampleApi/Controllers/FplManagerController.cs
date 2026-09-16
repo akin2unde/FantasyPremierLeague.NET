@@ -158,4 +158,16 @@ public sealed class FplManagerController : ControllerBase
         var data = await _service.GetH2HFixtureAsync(league, gw, page, cancellationToken);
         return Ok(data);
     }
+
+    /// <summary>
+    /// Gets Get my season stat so far .
+    /// </summary>
+    [HttpGet("GetMySeasonHistory/{managerId}")]
+    public async Task<IActionResult> GetMySeasonHistory(
+        int managerId,
+        CancellationToken cancellationToken)
+    {
+        var manager = await _service.GetMySeasonHistoryAsync(managerId, cancellationToken);
+        return manager is null ? NotFound() : Ok(manager);
+    }
 }

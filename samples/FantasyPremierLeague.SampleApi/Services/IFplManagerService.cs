@@ -66,6 +66,13 @@ public interface IFplManagerService
         CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// Gets a manager current season history.
+    /// </summary>
+    Task<FplEntryHistoryReponse> GetMySeasonHistoryAsync(
+        int managerId,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Gets a persisted manager by entry identifier.
     /// </summary>
     Task<FplLeague?> GetMyLeagueAsync(
