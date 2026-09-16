@@ -49,6 +49,15 @@ public sealed class FplManagersClient
             string.Format(FplEndpoints.Myteam, entryId), cancellationToken);
     }
 
+    /// <summary>
+    /// Provides the GetMyGWHistoryAsync member.
+    /// </summary>
+    public Task<FplEntryHistoryReponse> GetMyGWHistoryAsync(int entryId, CancellationToken cancellationToken = default)
+    {
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(entryId);
+        return _http.GetPublicAsync<FplEntryHistoryReponse>(
+            string.Format(FplEndpoints.MyGWHistory, entryId), cancellationToken);
+    }
 
 
     /// <summary>

@@ -49,4 +49,18 @@ public class FplChip
 
     [JsonPropertyName("status_for_entry")]
     public string? Status { get; set; }
+
+    /// <summary>
+    /// Gets or sets time and date .
+    /// </summary>
+
+    [JsonPropertyName("time")]
+    public DateTimeOffset? DateUsed { get; set; }
+
+    /// <summary>
+    /// Gets or sets time and date .
+    /// </summary>
+
+    [JsonPropertyName("event")]
+    public int GWUsed { get; set; }
 }

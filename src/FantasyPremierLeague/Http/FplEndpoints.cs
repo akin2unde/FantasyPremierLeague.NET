@@ -21,6 +21,10 @@ internal static class FplEndpoints
     /// </summary>
     public const string Myteam = "my-team/{0}/";
 
+    /// <summary>
+    /// Describes the team info member.
+    /// </summary>
+    public const string MyGWHistory = "entry/{0}/history/";
 
     /// <summary>
     /// Describes the member member.
