@@ -12,7 +12,7 @@ public sealed class FplEntryHistoryReponse
     /// Gets or sets the event.
     /// </summary>
     [JsonPropertyName("current")]
-    public List<FplEntryHistory> Event { get; set; } = [];
+    public List<FplEntryHistory> CurrentSeason { get; set; } = [];
 
     /// <summary>
     /// Gets or sets the points.

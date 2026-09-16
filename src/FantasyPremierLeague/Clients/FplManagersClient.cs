@@ -38,6 +38,17 @@ public sealed class FplManagersClient
             string.Format(FplEndpoints.EntryPicks, entryId, gameweek), cancellationToken);
     }
 
+    /// <summary>
+    /// Provides the tranfer history.
+    /// </summary>
+
+    public Task<FplEntryTransferHistory> GetManagerTransferHistoryAsync(int entryId, CancellationToken cancellationToken = default)
+    {
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(entryId);
+        return _http.GetPublicAsync<FplEntryTransferHistory>(
+            string.Format(FplEndpoints.TransferHistory, entryId), cancellationToken);
+    }
+
 
     /// <summary>
     /// Provides the GetMyTeamsAsync member.
