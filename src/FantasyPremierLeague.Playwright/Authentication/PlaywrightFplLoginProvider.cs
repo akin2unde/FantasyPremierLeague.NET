@@ -1,7 +1,6 @@
 using System.Text.RegularExpressions;
 using FantasyPremierLeague.Authentication;
 using FantasyPremierLeague.Exceptions;
-using FantasyPremierLeague.Playwright.Internal;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Playwright;
@@ -407,7 +406,7 @@ public sealed class PlaywrightFplLoginProvider :
                 "Authentication token response received successfully.");
 
             var session =
-                FplTokenResponseParser.Parse(
+                FplSessionParser.Parse(
                     responseText,
                     DateTimeOffset.UtcNow);
 

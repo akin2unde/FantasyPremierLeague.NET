@@ -16,9 +16,16 @@ public sealed class FplSession
     /// <summary>
     /// Provides the member member.
     /// </summary>
-    public string? RefreshToken { get; init; }
+    public string? RefreshToken { get; set; }
+
     /// <summary>
     /// Describes the RawTokenResponse member.
     /// </summary>
+
     public JsonElement? RawTokenResponse { get; init; }
+
+    /// <summary>
+    /// Describes the RefreshTokenExpiresAt member.
+    /// </summary>
+    public DateTimeOffset? RefreshTokenExpiresAt { get; set; }
 }

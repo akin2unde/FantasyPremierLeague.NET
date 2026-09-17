@@ -107,21 +107,7 @@ public sealed class FplClient
             cancellationToken);
     }
 
-    /// <summary>
-    /// Forces a new login and replaces the stored token.
-    /// </summary>
-    public Task<FplManagerRecord> RefreshLoginAsync(
-        string email,
-        string password,
-        CancellationToken cancellationToken = default)
-    {
-        return _authenticationManager.LoginAsync(
-            email,
-            password,
-            forceRefresh: true,
-            includeDetails: true,
-            cancellationToken);
-    }
+
 
     /// <summary>
     /// Removes the stored manager authentication record.

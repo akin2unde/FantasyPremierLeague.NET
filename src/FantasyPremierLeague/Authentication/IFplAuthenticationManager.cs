@@ -13,6 +13,7 @@ public interface IFplAuthenticationManager
     /// Provides the LoginAsync member.
     /// </summary>
     Task<FplManagerRecord> LoginAsync(string email, string password, bool forceRefresh, bool includeDetails, CancellationToken cancellationToken);
+
     /// <summary>
     /// Describes the GetCurrentAccessTokenAsync member.
     /// </summary>

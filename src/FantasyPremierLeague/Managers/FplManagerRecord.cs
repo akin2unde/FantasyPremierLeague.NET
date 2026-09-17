@@ -32,6 +32,11 @@ public sealed class FplManagerRecord
     public DateTimeOffset? TokenExpiresAt { get; set; }
 
     /// <summary>
+    /// Gets or sets the token expires at.
+    /// </summary>
+    public DateTimeOffset? RefreshTokenExpiresAt { get; set; }
+
+    /// <summary>
     /// Gets or sets the refresh token.
     /// </summary>
     public string? RefreshToken { get; set; }
@@ -57,6 +62,14 @@ public sealed class FplManagerRecord
     /// <param name="refreshBeforeExpiry">The period before expiry during which the token should be refreshed.</param>
     /// <returns><see langword="true"/> when the token is present and remains usable; otherwise, <see langword="false"/>.</returns>
     public bool HasUsableToken(TimeSpan refreshBeforeExpiry) =>
-        !string.IsNullOrWhiteSpace(AccessToken) &&
-        (TokenExpiresAt is null || TokenExpiresAt > DateTimeOffset.UtcNow.Add(refreshBeforeExpiry));
+        !string.IsNullOrWhiteSpace(AccessToken) && TokenExpiresAt > DateTimeOffset.UtcNow.Add(refreshBeforeExpiry);
+
+    /// <summary>
+    /// Determines whether the stored access token can be reused.
+    /// </summary>
+    /// <returns><see langword="true"/> when the token is present and remains usable; otherwise, <see langword="false"/>.</returns>
+    public bool HasUsableRefreshToken()
+    {
+        return !string.IsNullOrWhiteSpace(RefreshToken) && RefreshTokenExpiresAt is not null && RefreshTokenExpiresAt > DateTimeOffset.UtcNow;
+    }
 }

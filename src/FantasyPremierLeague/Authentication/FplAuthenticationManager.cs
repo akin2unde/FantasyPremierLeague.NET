@@ -53,12 +53,77 @@ internal sealed class FplAuthenticationManager : IFplAuthenticationManager
 
     //     return manager;
     // }
+    private const string TokenEndpoint =
+    "https://account.premierleague.com/as/token";
+
+    private const string ClientId =
+        "bfcbaf69-aade-4c1b-8f00-c1cb8a193030";
+
+    public static async Task<FplSession> RefreshSessionAsync(
+        FplSession currentSession,
+        CancellationToken cancellationToken = default)
+    {
+        HttpClient httpClient = new();
+
+        if (string.IsNullOrWhiteSpace(currentSession.RefreshToken))
+        {
+            throw new FplAuthenticationException(
+                "The FPL session does not contain a refresh token.");
+        }
+
+        using var request = new HttpRequestMessage(
+            HttpMethod.Post,
+            TokenEndpoint);
+
+        request.Content = new FormUrlEncodedContent(
+            new Dictionary<string, string>
+            {
+                ["grant_type"] = "refresh_token",
+                ["refresh_token"] = currentSession.RefreshToken,
+                ["scope"] = "openid profile email",
+                ["client_id"] = ClientId
+            });
+        try
+        {
+            using var response = await httpClient.SendAsync(
+                request,
+                cancellationToken);
+
+            var body = await response.Content.ReadAsStringAsync(
+                cancellationToken);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                throw new FplAuthenticationException(
+                    $"FPL token refresh failed. " +
+                    $"Status: {(int)response.StatusCode}. " +
+                    $"Response: {body}");
+            }
+
+            var refreshedSession = FplSessionParser.Parse(
+                body,
+                DateTimeOffset.UtcNow);
+
+            // Keep the previous refresh token only when FPL does not return a new one.
+            refreshedSession.RefreshToken =
+                string.IsNullOrWhiteSpace(refreshedSession.RefreshToken)
+                    ? currentSession.RefreshToken
+                    : refreshedSession.RefreshToken;
+
+            return refreshedSession;
+        }
+        catch (Exception)
+        {
+            throw new Exception("Unable to refresh");
+        }
+    }
     /// <summary>
     /// Describes the LoginAsync member.
     /// </summary>
+
     public async Task<FplManagerRecord> LoginAsync(string email, string password, bool forceRefresh, bool includeDetails, CancellationToken cancellationToken)
     {
-        ArgumentException.ThrowIfNullOrWhiteSpace(email); ArgumentException.ThrowIfNullOrWhiteSpace(password);
+        ArgumentException.ThrowIfNullOrWhiteSpace(email);
         email = email.Trim().ToLowerInvariant();
         await _loginLock.WaitAsync(cancellationToken);
         try
@@ -69,6 +134,18 @@ internal sealed class FplAuthenticationManager : IFplAuthenticationManager
                 CurrentManager ??= saved;
                 return saved;
             }
+            if (saved is not null && saved.HasUsableRefreshToken())
+            {
+                //refresh token 
+                var refresh = await RefreshSessionAsync(new FplSession { AccessToken = saved.AccessToken, RefreshToken = saved.RefreshToken, RefreshTokenExpiresAt = saved.RefreshTokenExpiresAt }, cancellationToken);
+                saved.AccessToken = refresh.AccessToken;
+                saved.RefreshToken = refresh.RefreshToken;
+                saved.TokenExpiresAt = refresh.ExpiresAt;
+                saved.RefreshTokenExpiresAt = refresh.RefreshTokenExpiresAt;
+                CurrentManager ??= saved;
+                return saved;
+            }
+            ArgumentException.ThrowIfNullOrWhiteSpace(password);
             var session = await _loginProvider.LoginAsync(email, password, cancellationToken);
             if (string.IsNullOrWhiteSpace(session.AccessToken)) throw new FplAuthenticationException("The login provider returned an empty access token.");
             var record = saved ?? new FplManagerRecord { Email = email, AccessToken = session.AccessToken };
@@ -77,12 +154,12 @@ internal sealed class FplAuthenticationManager : IFplAuthenticationManager
             record.RefreshToken = session.RefreshToken;
             record.UpdatedAt = DateTimeOffset.UtcNow;
             record.Password = password;
+            record.RefreshTokenExpiresAt = session.RefreshTokenExpiresAt;
             if (_options.LoadProfileAfterLogin)
             {
                 await _loadProfile.SetProfileAsync(record, cancellationToken);
             }
             await _managerStore.SaveAsync(record, cancellationToken);
-
             CurrentManager = record;
             //remove the password
             record.Password = string.Empty;
