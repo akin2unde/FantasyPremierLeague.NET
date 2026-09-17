@@ -100,14 +100,14 @@ internal sealed class FplAuthenticationManager : IFplAuthenticationManager
             var record = saved ?? new FplManagerRecord
             {
                 Email = email,
-                AccessToken = session.AccessToken
+                AccessToken = session.AccessToken,
+                Password = password
             };
 
             ApplySession(record, session);
             CurrentManager = record;
             await LoadDetailsIfRequestedAsync(record, includeDetails, cancellationToken);
             await _managerStore.SaveAsync(record, cancellationToken);
-
             return record;
         }
         finally
