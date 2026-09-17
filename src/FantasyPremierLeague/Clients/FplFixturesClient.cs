@@ -3,7 +3,7 @@ using FantasyPremierLeague.Models.Fixtures;
 
 namespace FantasyPremierLeague.Clients;
 /// <summary>
-/// Provides the FplFixturesClient member.
+/// Provides public FPL fixture operations.
 /// </summary>
 
 public sealed class FplFixturesClient
@@ -17,7 +17,7 @@ public sealed class FplFixturesClient
     /// </param>
     public FplFixturesClient(FplHttpClient http) => _http = http;
     /// <summary>
-    /// Provides the GetAllAsync member.
+    /// Gets all fixtures for the current season.
     /// </summary>
 
     public Task<List<FplFixture>> GetAllAsync(CancellationToken cancellationToken = default)
@@ -25,7 +25,7 @@ public sealed class FplFixturesClient
         return _http.GetPublicAsync<List<FplFixture>>(FplEndpoints.Fixtures, cancellationToken);
     }
     /// <summary>
-    /// Provides the GetByGWAsync member.
+    /// Gets fixtures scheduled for a gameweek.
     /// </summary>
 
     public Task<List<FplFixture>> GetByGWAsync(int gameweek, CancellationToken cancellationToken = default)
@@ -35,11 +35,12 @@ public sealed class FplFixturesClient
         return _http.GetPublicAsync<List<FplFixture>>(path, cancellationToken);
     }
     /// <summary>
-    /// Provides the GetByCodeAsync member.
+    /// Finds a fixture using its FPL fixture code.
     /// </summary>
 
     public async Task<FplFixture?> GetByCodeAsync(int code, CancellationToken cancellationToken = default)
     {
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(code);
         var all = await GetAllAsync(cancellationToken);
         return all.FirstOrDefault(_ => _.FixtureCode == code);
     }

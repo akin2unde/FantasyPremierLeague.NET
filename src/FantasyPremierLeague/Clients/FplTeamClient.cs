@@ -6,7 +6,7 @@ using FantasyPremierLeague.Results;
 
 namespace FantasyPremierLeague.Clients;
 /// <summary>
-/// Provides the FplTeamClient member.
+/// Provides authenticated operations that modify an FPL team.
 /// </summary>
 
 public sealed class FplTeamClient
@@ -20,7 +20,7 @@ public sealed class FplTeamClient
     /// </param>
     public FplTeamClient(FplHttpClient http) => _http = http;
     /// <summary>
-    /// Provides the SubmitLineupAsync member.
+    /// Submits the manager's lineup, captaincy, bench order, and optional chip.
     /// </summary>
 
     public async Task<FplOperationResult> SubmitLineupAsync(
@@ -37,7 +37,7 @@ public sealed class FplTeamClient
         return new FplOperationResult { Payload = payload };
     }
     /// <summary>
-    /// Provides the SubmitTransfersAsync member.
+    /// Submits one or more player transfers and an optional chip.
     /// </summary>
 
     public async Task<FplOperationResult> SubmitTransfersAsync(

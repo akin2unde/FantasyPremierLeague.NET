@@ -1,18 +1,18 @@
 namespace FantasyPremierLeague.Exceptions;
 /// <summary>
-/// Provides the FplMaintenanceException member.
+/// Represents the period in which FPL is unavailable while the game is updated.
 /// </summary>
-public sealed class FplMaintenanceException : Exception
+public sealed class FplMaintenanceException : FplException
 {
     /// <summary>
-    /// Describes the FplMaintenanceException member.
+    /// Initializes the exception with the standard maintenance message.
     /// </summary>
     public FplMaintenanceException()
         : base("Fantasy Premier League is currently being updated.")
     {
     }
     /// <summary>
-    /// Describes the FplMaintenanceException member.
+    /// Initializes the exception with a custom maintenance message.
     /// </summary>
     public FplMaintenanceException(string message)
         : base(message)

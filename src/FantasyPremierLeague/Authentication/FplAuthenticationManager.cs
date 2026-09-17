@@ -1,133 +1,307 @@
 using FantasyPremierLeague.Exceptions;
 using FantasyPremierLeague.Managers;
 using Microsoft.Extensions.Options;
+
 namespace FantasyPremierLeague.Authentication;
 
+/// <summary>
+/// Coordinates FPL login, access-token reuse, refresh-token exchange,
+/// profile loading, and manager-session persistence.
+/// </summary>
 internal sealed class FplAuthenticationManager : IFplAuthenticationManager
 {
+    private readonly IHttpClientFactory _httpClientFactory;
     private readonly ILoadProfile _loadProfile;
     private readonly IFplLoginProvider _loginProvider;
     private readonly IFplManagerStore _managerStore;
     private readonly FplOptions _options;
     private readonly SemaphoreSlim _loginLock = new(1, 1);
-    /// <summary>
-    /// Provides the member member.
-    /// </summary>
+
+    /// <inheritdoc />
     public FplManagerRecord? CurrentManager { get; set; }
+
     /// <summary>
-    /// Describes the FplAuthenticationManager member.
+    /// Initializes a new authentication manager.
     /// </summary>
-    public FplAuthenticationManager(IFplLoginProvider loginProvider, IFplManagerStore managerStore, ILoadProfile loadProfile, IOptions<FplOptions> options)
+    public FplAuthenticationManager(
+        IFplLoginProvider loginProvider,
+        IFplManagerStore managerStore,
+        ILoadProfile loadProfile,
+        IHttpClientFactory httpClientFactory,
+        IOptions<FplOptions> options)
     {
-        _loginProvider = loginProvider;
-        _managerStore = managerStore;
-        _loadProfile = loadProfile;
-        _options = options.Value;
+        _loginProvider = loginProvider ?? throw new ArgumentNullException(nameof(loginProvider));
+        _managerStore = managerStore ?? throw new ArgumentNullException(nameof(managerStore));
+        _loadProfile = loadProfile ?? throw new ArgumentNullException(nameof(loadProfile));
+        _httpClientFactory = httpClientFactory ?? throw new ArgumentNullException(nameof(httpClientFactory));
+        _options = options?.Value ?? throw new ArgumentNullException(nameof(options));
     }
-    // public async Task<FplManagerRecord> SaveManagerAsync(
-    //   FplManagerRecord manager,
-    //   CancellationToken cancellationToken = default)
-    // {
-    //     ArgumentNullException.ThrowIfNull(manager);
 
-    //     if (manager.EntryId <= 0)
-    //     {
-    //         throw new InvalidOperationException(
-    //             "Manager entry ID must be available before loading profile data.");
-    //     }
-
-    //     var profile = await _fplClient.Managers.GetProfileAsync(
-    //         manager.EntryId,
-    //         cancellationToken);
-
-    //     var entry = await _fplClient.Managers.GetEntryAsync(
-    //         manager.EntryId,
-    //         cancellationToken);
-
-    //     manager.Profile = profile;
-    //     manager.Entry = entry;
-
-    //     await _managerStore.SaveAsync(
-    //         manager,
-    //         cancellationToken);
-
-    //     return manager;
-    // }
-    /// <summary>
-    /// Describes the LoginAsync member.
-    /// </summary>
-    public async Task<FplManagerRecord> LoginAsync(string email, string password, bool forceRefresh, bool includeDetails, CancellationToken cancellationToken)
+    /// <inheritdoc />
+    public async Task<FplManagerRecord> LoginAsync(
+        string email,
+        string password,
+        bool forceRefresh,
+        bool includeDetails,
+        CancellationToken cancellationToken)
     {
-        ArgumentException.ThrowIfNullOrWhiteSpace(email); ArgumentException.ThrowIfNullOrWhiteSpace(password);
+        ArgumentException.ThrowIfNullOrWhiteSpace(email);
         email = email.Trim().ToLowerInvariant();
+
         await _loginLock.WaitAsync(cancellationToken);
         try
         {
-            var saved = CurrentManager ?? await _managerStore.GetByEmailAsync(email, cancellationToken);
-            if (!forceRefresh && saved is not null && saved.HasUsableToken(_options.RefreshBeforeExpiry))
+            var saved = string.Equals(
+                    CurrentManager?.Email,
+                    email,
+                    StringComparison.OrdinalIgnoreCase)
+                ? CurrentManager
+                : await _managerStore.GetByEmailAsync(email, cancellationToken);
+
+            if (_options.ReuseStoredToken &&
+                !forceRefresh &&
+                saved is not null &&
+                saved.HasUsableToken(_options.RefreshBeforeExpiry))
             {
-                CurrentManager ??= saved;
+                CurrentManager = saved;
+                await LoadDetailsIfRequestedAsync(saved, includeDetails, cancellationToken);
                 return saved;
             }
-            var session = await _loginProvider.LoginAsync(email, password, cancellationToken);
-            if (string.IsNullOrWhiteSpace(session.AccessToken)) throw new FplAuthenticationException("The login provider returned an empty access token.");
-            var record = saved ?? new FplManagerRecord { Email = email, AccessToken = session.AccessToken };
-            record.AccessToken = session.AccessToken;
-            record.TokenExpiresAt = session.ExpiresAt;
-            record.RefreshToken = session.RefreshToken;
-            record.UpdatedAt = DateTimeOffset.UtcNow;
-            record.Password = password;
-            if (_options.LoadProfileAfterLogin)
+
+            if (saved is not null && saved.HasUsableRefreshToken())
             {
-                await _loadProfile.SetProfileAsync(record, cancellationToken);
+                try
+                {
+                    await RefreshManagerSessionAsync(saved, cancellationToken);
+                    await LoadDetailsIfRequestedAsync(saved, includeDetails, cancellationToken);
+                    return saved;
+                }
+                catch (FplAuthenticationException) when (!string.IsNullOrWhiteSpace(password))
+                {
+                    // The refresh token may have been revoked before its JWT
+                    // expiration. Fall back to the configured login provider
+                    // when the caller supplied credentials.
+                }
             }
+
+            ArgumentException.ThrowIfNullOrWhiteSpace(password);
+
+            var session = await _loginProvider.LoginAsync(
+                email,
+                password,
+                cancellationToken);
+
+            if (string.IsNullOrWhiteSpace(session.AccessToken))
+            {
+                throw new FplAuthenticationException(
+                    "The login provider returned an empty access token.");
+            }
+
+            var record = saved ?? new FplManagerRecord
+            {
+                Email = email,
+                AccessToken = session.AccessToken
+            };
+
+            ApplySession(record, session);
+            CurrentManager = record;
+
+            await LoadDetailsIfRequestedAsync(record, includeDetails, cancellationToken);
             await _managerStore.SaveAsync(record, cancellationToken);
 
-            CurrentManager = record;
-            //remove the password
-            record.Password = string.Empty;
             return record;
         }
-        finally { _loginLock.Release(); }
+        finally
+        {
+            _loginLock.Release();
+        }
     }
-    /// <summary>
-    /// Provides the GetCurrentAccessTokenAsync member.
-    /// </summary>
+
+    /// <inheritdoc />
     public Task<string> GetCurrentAccessTokenAsync(CancellationToken cancellationToken)
-    { cancellationToken.ThrowIfCancellationRequested(); return Task.FromResult(CurrentManager?.AccessToken ?? throw new FplAuthenticationException("No active manager session. Call LoginAsync first.")); }
-    /// <summary>
-    /// Describes the RefreshCurrentAsync member.
-    /// </summary>
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        return Task.FromResult(
+            CurrentManager?.AccessToken ??
+            throw new FplAuthenticationException(
+                "No active manager session. Call LoginAsync or SetFoundRecord first."));
+    }
+
+    /// <inheritdoc />
     public async Task<string> RefreshCurrentAsync(CancellationToken cancellationToken)
     {
-        if (CurrentManager is null || CurrentManager.Password is null) throw new FplAuthenticationException("The current session cannot be refreshed because credentials are unavailable.");
-        var refreshed = await LoginAsync(CurrentManager.Email, CurrentManager.Password, true, true, cancellationToken); return refreshed.AccessToken;
+        var manager = CurrentManager ??
+            throw new FplAuthenticationException(
+                "No active manager session is available to refresh.");
+
+        if (!manager.HasUsableRefreshToken())
+        {
+            throw new FplAuthenticationException(
+                "The current manager does not have a usable refresh token. Log in again.");
+        }
+
+        await _loginLock.WaitAsync(cancellationToken);
+        try
+        {
+            await RefreshManagerSessionAsync(manager, cancellationToken);
+            return manager.AccessToken;
+        }
+        finally
+        {
+            _loginLock.Release();
+        }
     }
-    /// <summary>
-    /// Provides the SaveCurrentAsync member.
-    /// </summary>
-    public async Task SaveCurrentAsync(FplManagerRecord manager, CancellationToken cancellationToken)
+
+    /// <inheritdoc />
+    public async Task SaveCurrentAsync(
+        FplManagerRecord manager,
+        CancellationToken cancellationToken)
     {
-        CurrentManager = manager; await _managerStore.SaveAsync(manager, cancellationToken);
+        ArgumentNullException.ThrowIfNull(manager);
+        CurrentManager = manager;
+        await _managerStore.SaveAsync(manager, cancellationToken);
     }
-    /// <summary>
-    /// Describes the InvalidateCurrentAsync member.
-    /// </summary>
+
+    /// <inheritdoc />
     public Task InvalidateCurrentAsync(CancellationToken cancellationToken)
     {
+        cancellationToken.ThrowIfCancellationRequested();
         CurrentManager = null;
         return Task.CompletedTask;
     }
 
     /// <inheritdoc />
-    public Task LogoutAsync(
+    public async Task LogoutAsync(
         string email,
         CancellationToken cancellationToken = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(email);
+        var normalizedEmail = email.Trim().ToLowerInvariant();
+        await _managerStore.RemoveAsync(normalizedEmail, cancellationToken);
 
-        return _managerStore.RemoveAsync(
-            email.Trim().ToLowerInvariant(),
+        if (string.Equals(CurrentManager?.Email, normalizedEmail, StringComparison.OrdinalIgnoreCase))
+        {
+            CurrentManager = null;
+        }
+    }
+
+    private async Task RefreshManagerSessionAsync(
+        FplManagerRecord manager,
+        CancellationToken cancellationToken)
+    {
+        var session = await RefreshSessionAsync(
+            new FplSession
+            {
+                AccessToken = manager.AccessToken,
+                ExpiresAt = manager.TokenExpiresAt,
+                RefreshToken = manager.RefreshToken,
+                RefreshTokenExpiresAt = manager.RefreshTokenExpiresAt
+            },
             cancellationToken);
+
+        ApplySession(manager, session);
+        CurrentManager = manager;
+        await _managerStore.SaveAsync(manager, cancellationToken);
+    }
+
+    private async Task<FplSession> RefreshSessionAsync(
+        FplSession currentSession,
+        CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrWhiteSpace(currentSession.RefreshToken))
+        {
+            throw new FplAuthenticationException(
+                "The FPL session does not contain a refresh token.");
+        }
+
+        using var request = new HttpRequestMessage(HttpMethod.Post, _options.TokenEndpoint)
+        {
+            Content = new FormUrlEncodedContent(
+                new Dictionary<string, string>
+                {
+                    ["grant_type"] = "refresh_token",
+                    ["refresh_token"] = currentSession.RefreshToken,
+                    ["scope"] = _options.AuthenticationScope,
+                    ["client_id"] = _options.AuthenticationClientId
+                })
+        };
+
+        try
+        {
+            var httpClient = _httpClientFactory.CreateClient();
+            using var response = await httpClient.SendAsync(request, cancellationToken);
+            var body = await response.Content.ReadAsStringAsync(cancellationToken);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                var message =
+                    $"FPL token refresh failed with HTTP {(int)response.StatusCode} " +
+                    $"({response.ReasonPhrase}).";
+
+                if (_options.ExposeDetailedErrors && !string.IsNullOrWhiteSpace(body))
+                {
+                    message += $" Body: {body}";
+                }
+
+                throw new FplAuthenticationException(message);
+            }
+
+            var refreshedSession = FplSessionParser.Parse(body, DateTimeOffset.UtcNow);
+
+            if (string.IsNullOrWhiteSpace(refreshedSession.RefreshToken))
+            {
+                refreshedSession.RefreshToken = currentSession.RefreshToken;
+                refreshedSession.RefreshTokenExpiresAt = currentSession.RefreshTokenExpiresAt;
+            }
+            else if (refreshedSession.RefreshTokenExpiresAt is null &&
+                     string.Equals(
+                         refreshedSession.RefreshToken,
+                         currentSession.RefreshToken,
+                         StringComparison.Ordinal))
+            {
+                refreshedSession.RefreshTokenExpiresAt =
+                    currentSession.RefreshTokenExpiresAt;
+            }
+
+            return refreshedSession;
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
+        catch (FplAuthenticationException) when (_options.ExposeDetailedErrors)
+        {
+            throw;
+        }
+        catch (Exception exception)
+        {
+            throw new FplAuthenticationException(
+                "Unable to refresh the FPL session. Log in again if the refresh token is no longer valid.",
+                exception);
+        }
+    }
+
+    private async Task LoadDetailsIfRequestedAsync(
+        FplManagerRecord manager,
+        bool includeDetails,
+        CancellationToken cancellationToken)
+    {
+        if (!includeDetails && !_options.LoadProfileAfterLogin)
+        {
+            return;
+        }
+
+        await _loadProfile.SetProfileAsync(manager, cancellationToken);
+        await _managerStore.SaveAsync(manager, cancellationToken);
+    }
+
+    private static void ApplySession(FplManagerRecord manager, FplSession session)
+    {
+        manager.AccessToken = session.AccessToken;
+        manager.TokenExpiresAt = session.ExpiresAt;
+        manager.RefreshToken = session.RefreshToken;
+        manager.RefreshTokenExpiresAt = session.RefreshTokenExpiresAt;
+        manager.UpdatedAt = DateTimeOffset.UtcNow;
+        manager.Password = null;
     }
 }

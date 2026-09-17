@@ -4,6 +4,8 @@ using FantasyPremierLeague.Playwright;
 using FantasyPremierLeague.SampleApi.Services;
 using FantasyPremierLeague.DependencyInjection;
 using FantasyPremierLeague.Playwright.DependencyInjection;
+using FantasyPremierLeague.SampleApi.Errors;
+using FantasyPremierLeague.SampleApi.Persistence;
 var builder = WebApplication.CreateBuilder(args);
 
 // MVC controllers
@@ -12,6 +14,8 @@ builder.Services.AddControllers();
 // Swagger / OpenAPI
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+builder.Services.AddProblemDetails();
+builder.Services.AddExceptionHandler<FplExceptionHandler>();
 
 // Register the core SDK
 builder.Services.AddFantasyPremierLeague(options =>
@@ -24,6 +28,11 @@ builder.Services.AddFantasyPremierLeague(options =>
     options.UserAgent =
         "FantasyPremierLeague.SampleApi/1.0";
     options.LoadProfileAfterLogin = true;
+
+    // Exact upstream response bodies are useful while developing but can
+    // contain sensitive details. Keep this false in production unless your
+    // application intentionally protects and sanitizes the response.
+    options.ExposeDetailedErrors = builder.Environment.IsDevelopment();
 });
 
 // Register Playwright authentication
@@ -43,7 +52,7 @@ builder.Services.AddFantasyPremierLeaguePlaywright(options =>
 // Cassandra, or other database implementation.
 builder.Services.AddSingleton<
     IFplManagerStore,
-    InMemoryFplManagerStore>();
+    SampleManagerStore>();
 
 // Sample application service
 builder.Services.AddScoped<
@@ -51,6 +60,8 @@ builder.Services.AddScoped<
     FplManagerService>();
 
 var app = builder.Build();
+
+app.UseExceptionHandler();
 
 if (app.Environment.IsDevelopment())
 {

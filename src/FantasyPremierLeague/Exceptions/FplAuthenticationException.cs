@@ -1,16 +1,16 @@
 namespace FantasyPremierLeague.Exceptions;
 /// <summary>
-/// Provides the FplAuthenticationException member.
+/// Represents an FPL login or token-refresh failure.
 /// </summary>
 
 public sealed class FplAuthenticationException : FplException
 {
     /// <summary>
-    /// Describes the FplAuthenticationException member.
+    /// Initializes an authentication exception with an error message.
     /// </summary>
     public FplAuthenticationException(string message) : base(message) { }
     /// <summary>
-    /// Describes the FplAuthenticationException member.
+    /// Initializes an authentication exception with an error message and underlying cause.
     /// </summary>
     public FplAuthenticationException(string message, Exception innerException) : base(message, innerException) { }
 }

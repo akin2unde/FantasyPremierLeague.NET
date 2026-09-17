@@ -11,10 +11,11 @@ public sealed class FplClient
 {
     private readonly IFplAuthenticationManager _authenticationManager;
     /// <summary>
-    /// Use this to set CurrentManager on AuthenticationManager.
+    /// Selects a persisted manager record for subsequent authenticated operations.
     /// </summary>
     public void SetFoundRecord(FplManagerRecord fplManagerRecord)
     {
+        ArgumentNullException.ThrowIfNull(fplManagerRecord);
         _authenticationManager.CurrentManager = fplManagerRecord;
     }
     /// <summary>
@@ -54,9 +55,9 @@ public sealed class FplClient
         Team =
             team ??
             throw new ArgumentNullException(nameof(team));
-        Boostrap =
-       fplBoostrap ??
-       throw new ArgumentNullException(nameof(fplBoostrap));
+        _legacyBootstrap = fplBoostrap ??
+            throw new ArgumentNullException(nameof(fplBoostrap));
+        Bootstrap = _legacyBootstrap.Inner;
     }
 
     /// <summary>
@@ -85,9 +86,18 @@ public sealed class FplClient
     public FplTeamClient Team { get; }
 
     /// <summary>
-    /// Gets boostrap static data.
+    /// Gets bootstrap-static operations.
     /// </summary>
-    public FplBoostrapClient Boostrap { get; }
+    public FplBootstrapClient Bootstrap { get; }
+
+    private readonly FplBoostrapClient _legacyBootstrap;
+
+    /// <summary>
+    /// Gets bootstrap-static operations.
+    /// </summary>
+    /// <remarks>Use <see cref="Bootstrap"/>. This alias is retained for compatibility.</remarks>
+    [Obsolete("Use Bootstrap instead.")]
+    public FplBoostrapClient Boostrap => _legacyBootstrap;
 
     /// <summary>
     /// Logs in a manager or reuses a valid stored token.
@@ -95,8 +105,8 @@ public sealed class FplClient
     public Task<FplManagerRecord> LoginAsync(
         string email,
         string password,
-        bool forceRefresh,
-        bool includeDetails,
+        bool forceRefresh = false,
+        bool includeDetails = false,
         CancellationToken cancellationToken = default)
     {
         return _authenticationManager.LoginAsync(
@@ -108,20 +118,13 @@ public sealed class FplClient
     }
 
     /// <summary>
-    /// Forces a new login and replaces the stored token.
+    /// Refreshes the active manager's access token using its stored refresh token.
     /// </summary>
-    public Task<FplManagerRecord> RefreshLoginAsync(
-        string email,
-        string password,
-        CancellationToken cancellationToken = default)
-    {
-        return _authenticationManager.LoginAsync(
-            email,
-            password,
-            forceRefresh: true,
-            includeDetails: true,
-            cancellationToken);
-    }
+    public Task<string> RefreshCurrentSessionAsync(
+        CancellationToken cancellationToken = default) =>
+        _authenticationManager.RefreshCurrentAsync(cancellationToken);
+
+
 
     /// <summary>
     /// Removes the stored manager authentication record.

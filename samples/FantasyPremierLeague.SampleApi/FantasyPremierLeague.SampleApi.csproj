@@ -10,8 +10,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\FantasyPremierLeague\FantasyPremierLeague.csproj" />
-    <ProjectReference Include="..\..\src\FantasyPremierLeague.Playwright\FantasyPremierLeague.Playwright.csproj" />
+<ProjectReference Include="..\..\src\FantasyPremierLeague.Playwright\FantasyPremierLeague.Playwright.csproj" />
   </ItemGroup>
 
   <ItemGroup>

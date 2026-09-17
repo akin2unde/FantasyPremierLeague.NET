@@ -3,7 +3,7 @@ using FantasyPremierLeague.Models.Leagues;
 
 namespace FantasyPremierLeague.Clients;
 /// <summary>
-/// Provides the FplLeaguesClient member.
+/// Provides classic and head-to-head league operations.
 /// </summary>
 
 public sealed class FplLeaguesClient
@@ -29,7 +29,7 @@ public sealed class FplLeaguesClient
         _fplManagersClient = fplManagersClient;
     }
     /// <summary>
-    /// Provides the GetClassicStandingsAsync member.
+    /// Gets one page of classic-league standings.
     /// </summary>
 
     public Task<FplClassicLeague> GetClassicStandingsAsync(
@@ -44,7 +44,7 @@ public sealed class FplLeaguesClient
     }
 
     /// <summary>
-    /// Provides the GetH2HStandingsAsync member.
+    /// Gets one page of head-to-head league standings.
     /// </summary>
 
     public Task<FplH2HLeague> GetH2HStandingsAsync(
@@ -59,7 +59,7 @@ public sealed class FplLeaguesClient
     }
 
     /// <summary>
-    /// Provides the GetH2HStandingsAsync member.
+    /// Gets one page of head-to-head matches for a gameweek.
     /// </summary>
     public Task<FplH2HMatchesResponse> GetH2HFixtureAsync(
         int leagueId,
@@ -76,7 +76,7 @@ public sealed class FplLeaguesClient
 
 
     /// <summary>
-    /// Provides the GetMyLeagueAsync member.
+    /// Gets the leagues associated with a manager entry.
     /// </summary>
 
     public async Task<FplLeague?> GetMyLeagueAsync(

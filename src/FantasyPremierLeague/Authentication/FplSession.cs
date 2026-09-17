@@ -1,24 +1,31 @@
 using System.Text.Json;
 namespace FantasyPremierLeague.Authentication;
 /// <summary>
-/// Provides the FplSession member.
+/// Represents access and refresh tokens returned by FPL authentication.
 /// </summary>
 public sealed class FplSession
 {
     /// <summary>
-    /// Describes the AccessToken member.
+    /// Gets the bearer access token.
     /// </summary>
     public required string AccessToken { get; init; }
     /// <summary>
-    /// Describes the ExpiresAt member.
+    /// Gets the UTC time at which the access token expires.
     /// </summary>
     public DateTimeOffset? ExpiresAt { get; init; }
     /// <summary>
-    /// Provides the member member.
+    /// Gets or sets the refresh token used to obtain a new access token.
     /// </summary>
-    public string? RefreshToken { get; init; }
+    public string? RefreshToken { get; set; }
+
     /// <summary>
-    /// Describes the RawTokenResponse member.
+    /// Gets the raw token response for advanced diagnostics.
     /// </summary>
+
     public JsonElement? RawTokenResponse { get; init; }
+
+    /// <summary>
+    /// Gets or sets the UTC time at which the refresh token expires.
+    /// </summary>
+    public DateTimeOffset? RefreshTokenExpiresAt { get; set; }
 }
