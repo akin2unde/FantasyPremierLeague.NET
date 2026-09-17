@@ -302,6 +302,6 @@ internal sealed class FplAuthenticationManager : IFplAuthenticationManager
         manager.RefreshToken = session.RefreshToken;
         manager.RefreshTokenExpiresAt = session.RefreshTokenExpiresAt;
         manager.UpdatedAt = DateTimeOffset.UtcNow;
-        manager.Password = null;
+        // manager.Password = null;
     }
 }
