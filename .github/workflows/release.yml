@@ -98,7 +98,7 @@ jobs:
           dotnet pack
           src/FantasyPremierLeague/FantasyPremierLeague.csproj
           --configuration Release
-          --no-build
+          --no-restore
           --output ./artifacts
           -p:PackageVersion=${{ needs.verify-main.outputs.version }}
 
@@ -107,7 +107,7 @@ jobs:
           dotnet pack
           src/FantasyPremierLeague.Playwright/FantasyPremierLeague.Playwright.csproj
           --configuration Release
-          --no-build
+          --no-restore
           --output ./artifacts
           -p:PackageVersion=${{ needs.verify-main.outputs.version }}
 
