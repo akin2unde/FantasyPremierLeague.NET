@@ -197,7 +197,7 @@ internal sealed class FplAuthenticationManager : IFplAuthenticationManager
                 RefreshTokenExpiresAt = manager.RefreshTokenExpiresAt
             },
             cancellationToken);
-        await LoadDetailsIfRequestedAsync(saved, includeDetails, cancellationToken);
+        await LoadDetailsIfRequestedAsync(manager, true, cancellationToken);
         ApplySession(manager, session);
         CurrentManager = manager;
         await _managerStore.SaveAsync(manager, cancellationToken);
