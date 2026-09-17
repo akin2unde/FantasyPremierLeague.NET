@@ -4,7 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 namespace FantasyPremierLeague.Playwright.DependencyInjection;
 /// <summary>
-/// Provides the FantasyPremierLeaguePlaywrightExtensions member.
+/// Provides dependency-injection registration for Playwright authentication.
 /// </summary>
 public static class FantasyPremierLeaguePlaywrightExtensions
 {

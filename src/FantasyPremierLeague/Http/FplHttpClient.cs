@@ -3,6 +3,7 @@ using System.Net.Http.Json;
 using System.Text.Json;
 using FantasyPremierLeague.Authentication;
 using FantasyPremierLeague.Exceptions;
+using Microsoft.Extensions.Options;
 
 namespace FantasyPremierLeague.Http;
 /// <summary>
@@ -15,30 +16,36 @@ public sealed class FplHttpClient
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
     private readonly HttpClient _httpClient;
     private readonly IFplAuthenticationManager _authenticationManager;
+    private readonly FplOptions _options;
 
     /// <summary>
-    /// Describes the FplHttpClient member.
+    /// Initializes the HTTP pipeline used by the feature clients.
     /// </summary>
-    public FplHttpClient(HttpClient httpClient, IFplAuthenticationManager authenticationManager)
+    public FplHttpClient(
+        HttpClient httpClient,
+        IFplAuthenticationManager authenticationManager,
+        IOptions<FplOptions> options)
     {
-        _httpClient = httpClient;
-        _authenticationManager = authenticationManager;
+        _httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
+        _authenticationManager = authenticationManager ??
+            throw new ArgumentNullException(nameof(authenticationManager));
+        _options = options?.Value ?? throw new ArgumentNullException(nameof(options));
     }
 
     /// <summary>
-    /// Describes the member member.
+    /// Sends a public GET request and deserializes the response.
     /// </summary>
     public Task<T> GetPublicAsync<T>(string path, CancellationToken cancellationToken) =>
         SendAsync<T>(HttpMethod.Get, path, null, false, cancellationToken);
 
     /// <summary>
-    /// Describes the member member.
+    /// Sends an authenticated GET request and deserializes the response.
     /// </summary>
     public Task<T> GetAuthenticatedAsync<T>(string path, CancellationToken cancellationToken) =>
         SendAsync<T>(HttpMethod.Get, path, null, true, cancellationToken);
 
     /// <summary>
-    /// Describes the member member.
+    /// Sends an authenticated POST request and deserializes the response.
     /// </summary>
     public Task<T> PostAuthenticatedAsync<TBody, T>(string path, TBody body, CancellationToken cancellationToken) =>
         SendAsync<T>(HttpMethod.Post, path, body, true, cancellationToken);
@@ -82,7 +89,7 @@ public sealed class FplHttpClient
         return await _httpClient.SendAsync(request, cancellationToken);
     }
 
-    private static async Task<T> ReadResponseAsync<T>(
+    private async Task<T> ReadResponseAsync<T>(
         HttpResponseMessage response,
         string path,
         CancellationToken cancellationToken)
@@ -103,19 +110,38 @@ public sealed class FplHttpClient
 
                 throw new FplMaintenanceException();
             }
+            var message =
+                $"FPL returned {(int)response.StatusCode} ({response.ReasonPhrase}) for '{path}'.";
+
+            if (_options.ExposeDetailedErrors && !string.IsNullOrWhiteSpace(responseBody))
+            {
+                message += $" Body: {responseBody}";
+            }
+
             throw new FplException(
-                $"FPL returned {(int)response.StatusCode} ({response.ReasonPhrase}) for '{path}'. Body: {responseBody}");
+                message,
+                (int)response.StatusCode,
+                path,
+                _options.ExposeDetailedErrors ? responseBody : null);
         }
         try
         {
             return await response.Content.ReadFromJsonAsync<T>(JsonOptions, cancellationToken) ?? throw new FplException($"FPL returned an empty response for '{path}'.");
 
         }
-        catch (Exception ex)
+        catch (JsonException ex)
         {
-            Console.Write($"{ex.Message}");
-            throw;
+            var message = $"FPL returned invalid JSON for '{path}'.";
+            if (_options.ExposeDetailedErrors)
+            {
+                message += $" {ex.Message}";
+            }
 
+            throw new FplException(
+                message,
+                (int)response.StatusCode,
+                path,
+                innerException: ex);
         }
     }
 }

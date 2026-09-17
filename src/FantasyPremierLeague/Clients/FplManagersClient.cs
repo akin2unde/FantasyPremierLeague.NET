@@ -4,7 +4,7 @@ using FantasyPremierLeague.Models.Teams;
 
 namespace FantasyPremierLeague.Clients;
 /// <summary>
-/// Provides the FplManagersClient member.
+/// Provides public and authenticated FPL manager operations.
 /// </summary>
 
 public sealed class FplManagersClient
@@ -18,7 +18,7 @@ public sealed class FplManagersClient
     /// </param>
     public FplManagersClient(FplHttpClient http) => _http = http;
     /// <summary>
-    /// Provides the GetEntryAsync member.
+    /// Gets the public summary for a manager entry.
     /// </summary>
 
     public Task<FplEntry> GetEntryAsync(int entryId, CancellationToken cancellationToken = default)
@@ -27,7 +27,7 @@ public sealed class FplManagersClient
         return _http.GetPublicAsync<FplEntry>(string.Format(FplEndpoints.Entry, entryId), cancellationToken);
     }
     /// <summary>
-    /// Provides the GetPicksAsync member.
+    /// Gets a manager's picks for a gameweek.
     /// </summary>
 
     public Task<FplTeamPicks> GetPicksAsync(int entryId, int gameweek, CancellationToken cancellationToken = default)
@@ -39,7 +39,7 @@ public sealed class FplManagersClient
     }
 
     /// <summary>
-    /// Provides the tranfer history.
+    /// Gets a manager's transfer history.
     /// </summary>
 
     public Task<List<FplEntryTransferHistory>> GetManagerTransferHistoryAsync(int entryId, CancellationToken cancellationToken = default)
@@ -51,7 +51,7 @@ public sealed class FplManagersClient
 
 
     /// <summary>
-    /// Provides the GetMyTeamsAsync member.
+    /// Gets the authenticated manager's current team.
     /// </summary>
     public Task<FplTeamPicks> GetMyTeamAsync(int entryId, CancellationToken cancellationToken = default)
     {
@@ -61,7 +61,7 @@ public sealed class FplManagersClient
     }
 
     /// <summary>
-    /// Provides the GetMyGWHistoryAsync member.
+    /// Gets a manager's current-season and past-season history.
     /// </summary>
     public Task<FplEntryHistoryReponse> GetMyGWHistoryAsync(int entryId, CancellationToken cancellationToken = default)
     {
@@ -72,7 +72,7 @@ public sealed class FplManagersClient
 
 
     /// <summary>
-    /// Provides the GetCurrentAsync member.
+    /// Gets the authenticated manager's account profile.
     /// </summary>
 
     public Task<FplMe> GetCurrentAsync(CancellationToken cancellationToken = default) =>

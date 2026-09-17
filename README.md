@@ -3,403 +3,367 @@
 [![Build](https://github.com/akin2unde/FantasyPremierLeague.NET/actions/workflows/ci.yml/badge.svg)](https://github.com/akin2unde/FantasyPremierLeague.NET/actions/workflows/ci.yml)
 [![NuGet](https://img.shields.io/nuget/v/FantasyPremierLeague.NET.svg)](https://www.nuget.org/packages/FantasyPremierLeague.NET)
 [![Downloads](https://img.shields.io/nuget/dt/FantasyPremierLeague.NET.svg)](https://www.nuget.org/packages/FantasyPremierLeague.NET)
-[![Coverage](https://codecov.io/gh/akin2unde/FantasyPremierLeague.NET/graph/badge.svg)](https://codecov.io/gh/akin2unde/FantasyPremierLeague.NET)
 [![License](https://img.shields.io/github/license/akin2unde/FantasyPremierLeague.NET)](LICENSE)
 
-A modern, strongly typed **.NET 10 SDK** for interacting with the Fantasy Premier League API.
+A strongly typed, asynchronous .NET 10 SDK for the Fantasy Premier League API. It supports public data, authenticated manager operations, automatic access-token refresh, replaceable session persistence, and optional Playwright login.
 
-FantasyPremierLeague.NET provides a clean, dependency injection-friendly SDK that supports both public and authenticated Fantasy Premier League endpoints while allowing developers to store manager information in any database of their choice.
+> The Fantasy Premier League API is not an officially supported public developer API. Endpoints and authentication behaviour can change without notice. Use authenticated write operations carefully and comply with the Premier League's applicable terms.
 
----
+## Features
 
-# Why FantasyPremierLeague.NET?
+- Strongly typed bootstrap, player, fixture, manager, league, pick, history, and live-gameweek models
+- Public and authenticated FPL clients
+- Playwright-based interactive login in an optional package
+- Access-token expiration read from the JWT `exp` claim
+- Refresh-token expiration read and stored separately
+- Automatic access-token reuse and refresh
+- Refresh-token rotation support
+- Automatic authenticated-request retry after `401 Unauthorized`
+- Pluggable manager/session persistence through `IFplManagerStore`
+- Optional manager profile and entry loading
+- Configurable detailed upstream errors
+- Dependency-injection integration
+- XML documentation and a complete ASP.NET Core sample API
 
-Most unofficial Fantasy Premier League libraries focus only on making HTTP requests.
+## Packages
 
-FantasyPremierLeague.NET was designed to feel like a modern .NET SDK by providing:
-
-* Strongly typed models
-* Clean Dependency Injection
-* Automatic authentication
-* Automatic token reuse
-* Automatic token refresh
-* Pluggable persistence
-* Extensible authentication providers
-* Clean architecture
-* XML documentation
-* ASP.NET Core integration
-
----
-
-# Features
-
-* .NET 10
-* Fully asynchronous API
-* Strongly typed responses
-* Built-in Dependency Injection
-* Playwright authentication provider
-* Automatic token reuse
-* Automatic re-authentication
-* Database-agnostic persistence
-* XML documentation
-* Modular architecture
-* ASP.NET Core sample application
-* Unit tests
-* Open-source
-
----
-
-# Installation
-
-## Core SDK
+Install the core SDK:
 
 ```bash
 dotnet add package FantasyPremierLeague.NET
 ```
 
-## Playwright Authentication
+Install Playwright authentication only when browser login is required:
 
 ```bash
 dotnet add package FantasyPremierLeague.NET.Playwright
 ```
 
----
+After installing the Playwright package, install Chromium for the target environment. From the build output directory, run the generated Playwright installer, for example:
 
-# Quick Start
-
-Register the SDK
-
-```csharp
-builder.Services.AddFantasyPremierLeague(options =>
-{
-    options.BaseAddress = new Uri("https://fantasy.premierleague.com/api/");
-});
+```bash
+pwsh bin/Debug/net10.0/playwright.ps1 install chromium
 ```
 
-Enable Playwright authentication
+## Registration
 
 ```csharp
+using FantasyPremierLeague.DependencyInjection;
+using FantasyPremierLeague.Playwright.DependencyInjection;
+
+builder.Services.AddFantasyPremierLeague(options =>
+{
+    options.BaseAddress =
+        new Uri("https://fantasy.premierleague.com/api/");
+
+    options.Timeout = TimeSpan.FromSeconds(60);
+    options.RefreshBeforeExpiry = TimeSpan.FromMinutes(5);
+    options.ReuseStoredToken = true;
+    options.LoadProfileAfterLogin = true;
+
+    // Keep false in production unless exact upstream messages are required
+    // and the application protects them from logs and public responses.
+    options.ExposeDetailedErrors = false;
+});
+
 builder.Services.AddFantasyPremierLeaguePlaywright(options =>
 {
     options.Headless = true;
+    options.NavigationTimeout = TimeSpan.FromSeconds(60);
+    options.InteractionTimeout = TimeSpan.FromSeconds(30);
+    options.ShowLog = false;
 });
 ```
 
-Register your manager persistence
+The core package does not depend on Playwright. Applications that already have another `IFplLoginProvider` can register that provider instead.
+
+## Manager persistence
+
+The SDK includes `InMemoryFplManagerStore` for development and tests. Production applications should implement `IFplManagerStore` using their database:
 
 ```csharp
-builder.Services.AddSingleton<
-    IFplManagerStore,
-    MongoFplManagerStore>();
-```
-
-Inject the SDK
-
-```csharp
-public class FplService
+public sealed class MongoFplManagerStore : IFplManagerStore
 {
-    private readonly FplClient _client;
-
-    public FplService(FplClient client)
+    public Task<FplManagerRecord?> GetByEmailAsync(
+        string email,
+        CancellationToken cancellationToken = default)
     {
-        _client = client;
+        // Load by normalized email.
+    }
+
+    public Task<FplManagerRecord?> GetByEntryIdAsync(
+        int entryId,
+        CancellationToken cancellationToken = default)
+    {
+        // Load by FPL entry ID.
+    }
+
+    public Task SaveAsync(
+        FplManagerRecord manager,
+        CancellationToken cancellationToken = default)
+    {
+        // Insert or replace the session.
+    }
+
+    public Task RemoveAsync(
+        string email,
+        CancellationToken cancellationToken = default)
+    {
+        // Delete or revoke the stored session.
     }
 }
 ```
 
----
+Register it with:
 
-# Architecture
+```csharp
+builder.Services
+    .AddFantasyPremierLeagueManagerStore<MongoFplManagerStore>();
+```
+
+Persist at least these `FplManagerRecord` fields:
+
+- `Email`
+- `EntryId`
+- `AccessToken`
+- `TokenExpiresAt`
+- `RefreshToken`
+- `RefreshTokenExpiresAt`
+- `UpdatedAt`
+- `Profile` and `Entry` when required
+
+Access and refresh tokens are credentials. Encrypt them at rest, exclude them from application logs, and never return them from a public API unless that is an intentional design decision. The SDK does not need to persist the manager's password.
+
+## Authentication and refresh flow
 
 ```text
-Application
-      │
-      ▼
- FplClient
-      │
-      ├──────────────┐
-      │              │
- Players        Fixtures
- Managers       Leagues
- Team
-      │
-      ▼
- FplHttpClient
-      │
-      ▼
- Authentication Manager
-      │
-      ▼
- Manager Store
-      │
-      ▼
- MongoDB / SQL Server / Redis /
- PostgreSQL / Cassandra / etc.
+LoginAsync
+  ├─ usable stored access token → reuse it
+  ├─ usable stored refresh token → request new tokens
+  └─ no usable session → run the configured login provider
 ```
 
----
+The FPL access token normally lasts one hour. The SDK reads the absolute `exp` value from the access-token JWT rather than assuming the duration. It reads the refresh token's separate `exp` claim into `RefreshTokenExpiresAt`.
 
-# Authentication Flow
+When FPL returns a replacement refresh token, the SDK stores it immediately. When the refresh response omits a refresh token, the SDK preserves the existing token and expiration.
 
-The SDK authenticates only when required.
-
-```text
-Login Requested
-       │
-       ▼
-Check Manager Store
-       │
-       ├───────────────┐
-       │               │
-Found Manager?        No
-       │               │
-      Yes              ▼
-       │         Authenticate
-       │               │
-Token Valid?           │
-       │               │
- Yes ──┘               ▼
-       │         Save Manager
-       ▼               │
-Reuse Token ◄──────────┘
-```
-
-Every authenticated manager is stored as an `FplManagerRecord`.
-
-The SDK stores:
-
-* Email
-* Entry Id
-* Access Token
-* Expiry Date
-* Manager Profile
-* Entry Information
-
-This allows the SDK to avoid unnecessary browser authentication.
-
----
-
-# Example
-
-Authenticate a manager
+Authenticate:
 
 ```csharp
-await client.LoginAsync(
-    "user@example.com",
-    "password");
+var manager = await client.LoginAsync(
+    email: "user@example.com",
+    password: "password",
+    forceRefresh: false,
+    includeDetails: true,
+    cancellationToken);
 ```
 
-Retrieve bootstrap information
+Explicitly refresh the selected manager:
 
 ```csharp
-var bootstrap =
-    await client.Players.GetBootstrapAsync();
+client.SetFoundRecord(manager);
+
+var accessToken = await client.RefreshCurrentSessionAsync(
+    cancellationToken);
 ```
 
-Retrieve player information
+In an ASP.NET Core application, `FplClient` is scoped. Before an authenticated call in a later HTTP request, load the correct manager from your `IFplManagerStore` and select it:
 
 ```csharp
-var player =
-    await client.Players.GetPlayerSummaryAsync(328);
+var manager = await managerStore.GetByEntryIdAsync(
+    entryId,
+    cancellationToken);
+
+if (manager is null)
+    throw new InvalidOperationException("Log in first.");
+
+client.SetFoundRecord(manager);
+
+var team = await client.Managers.GetMyTeamAsync(
+    entryId,
+    cancellationToken);
 ```
 
-Retrieve fixtures
+## Client API
+
+Inject `FplClient` and use its feature clients.
+
+### Bootstrap and players
 
 ```csharp
-var fixtures =
-    await client.Fixtures.GetFixturesAsync();
+var bootstrap = await client.Bootstrap.GetDataAsync(cancellationToken);
+var player = await client.Players.GetPlayerSummaryAsync(playerId, cancellationToken);
+var live = await client.Players.GetPlayerLiveAsync(gameweek, cancellationToken);
+var dreamTeam = await client.Players.GetGWDreamTeamAsync(gameweek, cancellationToken);
 ```
 
-Retrieve a manager
+`client.Boostrap` remains as an obsolete compatibility alias. New code should use `client.Bootstrap`.
+
+### Fixtures
 
 ```csharp
-var manager =
-    await client.Managers.GetEntryAsync(123456);
+var allFixtures = await client.Fixtures.GetAllAsync(cancellationToken);
+var gameweekFixtures = await client.Fixtures.GetByGWAsync(gameweek, cancellationToken);
+var fixture = await client.Fixtures.GetByCodeAsync(fixtureCode, cancellationToken);
 ```
 
----
-
-# Manager Persistence
-
-The SDK never dictates how your application stores data.
-
-Simply implement:
+### Managers
 
 ```csharp
-public interface IFplManagerStore
+var entry = await client.Managers.GetEntryAsync(entryId, cancellationToken);
+var picks = await client.Managers.GetPicksAsync(entryId, gameweek, cancellationToken);
+var transfers = await client.Managers.GetManagerTransferHistoryAsync(entryId, cancellationToken);
+var history = await client.Managers.GetMyGWHistoryAsync(entryId, cancellationToken);
+
+// Authenticated
+var me = await client.Managers.GetCurrentAsync(cancellationToken);
+var myTeam = await client.Managers.GetMyTeamAsync(entryId, cancellationToken);
 ```
 
-The same SDK works with:
+### Leagues
 
-* MongoDB
-* SQL Server
-* PostgreSQL
-* MySQL
-* SQLite
-* Redis
-* Cassandra
-* Cosmos DB
-* In-Memory
-
----
-
-# Projects
-
-```text
-FantasyPremierLeague.NET
-│
-├── src
-│   ├── FantasyPremierLeague
-│   └── FantasyPremierLeague.Playwright
-│
-├── samples
-│   └── FantasyPremierLeague.SampleApi
-│
-├── tests
-│
-└── docs
+```csharp
+var leagues = await client.Leagues.GetMyLeagueAsync(entryId, cancellationToken);
+var classic = await client.Leagues.GetClassicStandingsAsync(leagueId, page, cancellationToken);
+var h2h = await client.Leagues.GetH2HStandingsAsync(leagueId, page, cancellationToken);
+var matches = await client.Leagues.GetH2HFixtureAsync(leagueId, gameweek, page, cancellationToken);
 ```
 
----
+### Lineup and transfers
 
-# Project Structure
+These methods modify the authenticated manager's FPL team.
 
-## FantasyPremierLeague
+```csharp
+var lineupResult = await client.Team.SubmitLineupAsync(
+    entryId,
+    new FplSubstitutionRequest
+    {
+        Chip = null,
+        Picks = picks
+    },
+    cancellationToken);
 
-Contains
+var transferResult = await client.Team.SubmitTransfersAsync(
+    new FplTransferRequest
+    {
+        Entry = entryId,
+        Event = gameweek,
+        Chip = null,
+        Transfers = transfers
+    },
+    cancellationToken);
+```
 
-* Feature Clients
-* Models
-* HTTP Pipeline
-* Authentication Contracts
-* Manager Store Contracts
-* Dependency Injection
+## Available SDK operations
 
-This package has **no Playwright dependency**.
+| Area | SDK method | Authentication |
+| --- | --- | --- |
+| Authentication | `LoginAsync` | Browser login or stored session |
+| Authentication | `RefreshCurrentSessionAsync` | Refresh token |
+| Authentication | `LogoutAsync` | Stored session |
+| Bootstrap | `Bootstrap.GetDataAsync` | Public |
+| Players | `Players.GetBootstrapAsync` | Public |
+| Players | `Players.GetPlayerSummaryAsync` | Public |
+| Players | `Players.GetPlayerLiveAsync` | Public |
+| Players | `Players.GetGWDreamTeamAsync` | Public |
+| Fixtures | `Fixtures.GetAllAsync` | Public |
+| Fixtures | `Fixtures.GetByGWAsync` | Public |
+| Fixtures | `Fixtures.GetByCodeAsync` | Public |
+| Managers | `Managers.GetEntryAsync` | Public |
+| Managers | `Managers.GetPicksAsync` | Public |
+| Managers | `Managers.GetManagerTransferHistoryAsync` | Public |
+| Managers | `Managers.GetMyGWHistoryAsync` | Public |
+| Managers | `Managers.GetMyTeamAsync` | Authenticated |
+| Managers | `Managers.GetCurrentAsync` | Authenticated |
+| Leagues | `Leagues.GetMyLeagueAsync` | Public |
+| Leagues | `Leagues.GetClassicStandingsAsync` | Public |
+| Leagues | `Leagues.GetH2HStandingsAsync` | Public |
+| Leagues | `Leagues.GetH2HFixtureAsync` | Public |
+| Team | `Team.SubmitLineupAsync` | Authenticated write |
+| Team | `Team.SubmitTransfersAsync` | Authenticated write |
 
----
+## Detailed errors
 
-## FantasyPremierLeague.Playwright
+By default, exceptions describe the failed operation without copying an upstream response body into the exception message:
 
-Contains
+```csharp
+options.ExposeDetailedErrors = false;
+```
 
-* Playwright Login Provider
-* Browser Authentication
-* Token Extraction
-* Authentication Registration
+An internal or development application can opt into exact upstream details:
 
-This package is optional.
+```csharp
+options.ExposeDetailedErrors = true;
+```
 
----
+Failed FPL requests throw `FplException`. It exposes:
+
+- `StatusCode`
+- `RequestPath`
+- `ResponseBody` when detailed errors are enabled
+
+Authentication failures throw `FplAuthenticationException`, and FPL maintenance responses throw `FplMaintenanceException`. The sample converts these exceptions to RFC 7807 `ProblemDetails` responses.
+
+Do not expose detailed authentication errors or response bodies to untrusted callers without sanitizing them.
 
 ## Sample API
 
-Contains a working ASP.NET Core example demonstrating
+The project at `samples/FantasyPremierLeague.SampleApi` is a runnable ASP.NET Core reference application. Swagger documents all SDK operations, including login, refresh, logout, bootstrap, players, fixtures, manager picks/history/transfers, leagues, lineup submission, and transfer submission.
 
-* Dependency Injection
-* Authentication
-* Manager Persistence
-* Controllers
-* Services
+Run it:
 
----
+```bash
+dotnet run --project samples/FantasyPremierLeague.SampleApi
+```
 
-# Current Endpoints
+Open the Swagger URL printed by ASP.NET Core, authenticate with `POST /api/fpl/authentication/login`, then use the returned `EntryId` for authenticated sample routes.
 
-Public
+## Error handling example
 
-* Bootstrap
-* Players
-* Fixtures
-* Leagues
+```csharp
+try
+{
+    var picks = await client.Managers.GetPicksAsync(
+        entryId,
+        gameweek,
+        cancellationToken);
+}
+catch (FplMaintenanceException)
+{
+    // FPL is currently being updated.
+}
+catch (FplAuthenticationException exception)
+{
+    // Login or refresh failed.
+}
+catch (FplException exception)
+{
+    logger.LogWarning(
+        "FPL request {Path} failed with {StatusCode}",
+        exception.RequestPath,
+        exception.StatusCode);
+}
+```
 
-Authenticated
+## Project structure
 
-* Login
-* Team
-* Manager
-* Transfers *(Work in Progress)*
+```text
+FantasyPremierLeague.NET
+├── src
+│   ├── FantasyPremierLeague
+│   └── FantasyPremierLeague.Playwright
+├── samples
+│   └── FantasyPremierLeague.SampleApi
+├── tests
+├── CHANGELOG.md
+├── CONTRIBUTING.md
+└── ROADMAP.md
+```
 
----
+## Contributing
 
-# Roadmap
+See [CONTRIBUTING.md](CONTRIBUTING.md). When an FPL response changes, include a sanitized response sample and tests for the affected model or parser.
 
-## v0.1
+## License
 
-* Remaining Public Endpoints
-* Better Exception Handling
-* Improved XML Documentation
-
-## v0.2
-
-* MongoDB Package
-* Redis Package
-* SQL Server Package
-
-## v0.3
-
-* Polly Retry Policies
-* Caching
-* Better Logging
-
-## v1.0
-
-* Stable Public API
-* Complete Endpoint Coverage
-* NuGet Stable Release
-
----
-
-# Documentation
-
-Additional documentation is available inside the repository.
-
-* CHANGELOG.md
-* ROADMAP.md
-* CONTRIBUTING.md
-
----
-
-# Contributing
-
-Contributions are welcome.
-
-If you would like to contribute
-
-1. Fork the repository
-2. Create a feature branch
-3. Submit a Pull Request
-
-Please include tests and documentation with new features.
-
----
-
-# Disclaimer
-
-FantasyPremierLeague.NET is an unofficial SDK.
-
-It is not affiliated with, endorsed by or sponsored by the Fantasy Premier League or the Premier League.
-
----
-
-# License
-
-MIT License
-
-See the LICENSE file for details.
-
----
-
-# Author
-
-**Akintunde Morakinyo**
-
-Senior Software Engineer
-
-* .NET
-* C#
-* Angular
-* React Native
-* TypeScript
-
-Building reusable software components and modern developer tools for the .NET ecosystem.
+Licensed under the [MIT License](LICENSE).

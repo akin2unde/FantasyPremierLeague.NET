@@ -73,12 +73,12 @@ internal static class FplEndpoints
     /// <summary>
     /// Describes the member member.
     /// </summary>
-    public static string PLayerLIVE = "event/{0}/live/";
+    public const string PlayerLive = "event/{0}/live/";
 
     /// <summary>
     /// Describes the member member.
     /// </summary>
-    public static string DreamTeam = "dream-team/{0}/";
+    public const string DreamTeam = "dream-team/{0}/";
 
 
 

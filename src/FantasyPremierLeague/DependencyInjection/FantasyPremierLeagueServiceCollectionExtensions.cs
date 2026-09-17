@@ -7,12 +7,12 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
 namespace FantasyPremierLeague.DependencyInjection;
 /// <summary>
-/// Provides the FantasyPremierLeagueServiceCollectionExtensions member.
+/// Provides dependency-injection registration for the core FPL SDK.
 /// </summary>
 public static class FantasyPremierLeagueServiceCollectionExtensions
 {
     /// <summary>
-    /// Describes the AddFantasyPremierLeague member.
+    /// Registers the FPL clients, authentication manager, HTTP pipeline, and default in-memory store.
     /// </summary>
     public static IServiceCollection AddFantasyPremierLeague(
         this IServiceCollection services,
@@ -60,8 +60,10 @@ public static class FantasyPremierLeagueServiceCollectionExtensions
 
             return new FplHttpClient(
                 httpClientFactory.CreateClient("FantasyPremierLeague"),
-                authenticationManager);
+                authenticationManager,
+                serviceProvider.GetRequiredService<IOptions<FplOptions>>());
         });
+        services.AddScoped<FplBootstrapClient>();
         services.AddScoped<FplBoostrapClient>();
         services.AddScoped<FplPlayersClient>();
         services.AddScoped<FplFixturesClient>();
@@ -74,7 +76,7 @@ public static class FantasyPremierLeagueServiceCollectionExtensions
         return services;
     }
     /// <summary>
-    /// Describes the member member.
+    /// Replaces the default manager store with an application-provided implementation.
     /// </summary>
     public static IServiceCollection AddFantasyPremierLeagueManagerStore<TStore>(this IServiceCollection services) where TStore : class, IFplManagerStore
     { services.Replace(ServiceDescriptor.Singleton<IFplManagerStore, TStore>()); return services; }

@@ -2,6 +2,8 @@ using System.Text.Json;
 using FantasyPremierLeague.Authentication;
 using FantasyPremierLeague.Exceptions;
 
+namespace FantasyPremierLeague.Managers;
+
 /// <summary>
 /// Parses FPL OAuth token responses into <see cref="FplSession"/> instances.
 /// </summary>

@@ -1,10 +1,11 @@
 using System.Text.RegularExpressions;
+using FantasyPremierLeague;
 using FantasyPremierLeague.Authentication;
 using FantasyPremierLeague.Exceptions;
+using FantasyPremierLeague.Managers;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Playwright;
-
 namespace FantasyPremierLeague.Playwright.Authentication;
 
 /// <summary>
@@ -50,6 +51,8 @@ public sealed class PlaywrightFplLoginProvider :
 
     private readonly FplPlaywrightOptions _options;
 
+    private readonly FplOptions _coreOptions;
+
     private readonly ILogger<PlaywrightFplLoginProvider> _logger;
 
     private readonly SemaphoreSlim _initializationLock =
@@ -64,17 +67,23 @@ public sealed class PlaywrightFplLoginProvider :
     /// <param name="options">
     /// The Playwright authentication options.
     /// </param>
+    /// <param name="coreOptions">
+    /// The core FPL client configuration, including authentication and endpoint settings.
+    /// </param>
     /// <param name="logger">
     /// The logger used to record authentication progress.
     /// </param>
     public PlaywrightFplLoginProvider(
         IOptions<FplPlaywrightOptions> options,
+        IOptions<FplOptions> coreOptions,
         ILogger<PlaywrightFplLoginProvider> logger)
     {
         ArgumentNullException.ThrowIfNull(options);
+        ArgumentNullException.ThrowIfNull(coreOptions);
         ArgumentNullException.ThrowIfNull(logger);
 
         _options = options.Value;
+        _coreOptions = coreOptions.Value;
         _logger = logger;
     }
 
@@ -392,9 +401,17 @@ public sealed class PlaywrightFplLoginProvider :
                         "the Premier League account rejected the supplied credentials.");
                 }
 
-                throw new FplAuthenticationException(
+                var message =
                     $"Fantasy Premier League authentication failed. " +
-                    $"The token endpoint returned HTTP {response.Status}.");
+                    $"The token endpoint returned HTTP {response.Status}.";
+
+                if (_coreOptions.ExposeDetailedErrors &&
+                    !string.IsNullOrWhiteSpace(responseText))
+                {
+                    message += $" Body: {responseText}";
+                }
+
+                throw new FplAuthenticationException(message);
             }
 
             /*

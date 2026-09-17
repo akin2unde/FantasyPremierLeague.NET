@@ -30,7 +30,7 @@ public sealed class FplPlayersClient
         CancellationToken cancellationToken = default)
     {
         return _httpClient.GetPublicAsync<FplBootstrapStatic>(
-            "bootstrap-static/",
+            FplEndpoints.Bootstrap,
             cancellationToken);
     }
 
@@ -44,7 +44,7 @@ public sealed class FplPlayersClient
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(playerId);
 
         return _httpClient.GetPublicAsync<FplElementSummary>(
-            $"element-summary/{playerId}/",
+            string.Format(FplEndpoints.ElementSummary, playerId),
             cancellationToken);
     }
 
@@ -58,7 +58,7 @@ public sealed class FplPlayersClient
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(gw);
 
         return _httpClient.GetPublicAsync<FplLiveElement>(
-            string.Format(FplEndpoints.PLayerLIVE, gw),
+            string.Format(FplEndpoints.PlayerLive, gw),
             cancellationToken);
     }
 
