@@ -74,8 +74,7 @@ internal sealed class FplAuthenticationManager : IFplAuthenticationManager
             {
                 try
                 {
-                    if (includeDetails)
-                        await RefreshManagerSessionAsync(saved, cancellationToken);
+                    await RefreshManagerSessionAsync(saved, includeDetails, cancellationToken);
                     return saved;
                 }
                 catch (FplAuthenticationException) when (!string.IsNullOrWhiteSpace(password))
@@ -144,7 +143,7 @@ internal sealed class FplAuthenticationManager : IFplAuthenticationManager
         await _loginLock.WaitAsync(cancellationToken);
         try
         {
-            await RefreshManagerSessionAsync(manager, cancellationToken);
+            await RefreshManagerSessionAsync(manager, false, cancellationToken);
             return manager.AccessToken;
         }
         finally
@@ -188,6 +187,7 @@ internal sealed class FplAuthenticationManager : IFplAuthenticationManager
 
     private async Task RefreshManagerSessionAsync(
         FplManagerRecord manager,
+        bool includeDetails,
         CancellationToken cancellationToken)
     {
         var session = await RefreshSessionAsync(
@@ -199,8 +199,9 @@ internal sealed class FplAuthenticationManager : IFplAuthenticationManager
                 RefreshTokenExpiresAt = manager.RefreshTokenExpiresAt
             },
             cancellationToken);
-        await LoadDetailsIfRequestedAsync(manager, true, cancellationToken);
         ApplySession(manager, session);
+        if (includeDetails)
+            await LoadDetailsIfRequestedAsync(manager, true, cancellationToken);
         CurrentManager = manager;
         await _managerStore.SaveAsync(manager, cancellationToken);
     }
