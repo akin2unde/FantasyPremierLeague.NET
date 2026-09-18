@@ -71,6 +71,10 @@ public sealed class FplManagerRecord
     /// <returns><see langword="true"/> when the token is present and remains usable; otherwise, <see langword="false"/>.</returns>
     public bool HasUsableRefreshToken()
     {
-        return !string.IsNullOrWhiteSpace(RefreshToken) && RefreshTokenExpiresAt is not null && RefreshTokenExpiresAt > DateTimeOffset.UtcNow;
+        var res = !string.IsNullOrWhiteSpace(RefreshToken) && RefreshTokenExpiresAt is not null && RefreshTokenExpiresAt > DateTimeOffset.UtcNow;
+        Console.WriteLine($"Has Usable refresh token is {res}");
+        Console.WriteLine($"Refresh token is {RefreshTokenExpiresAt.ToString()}");
+        Console.WriteLine($"Compare is {RefreshTokenExpiresAt > DateTimeOffset.UtcNow}");
+        return res;
     }
 }

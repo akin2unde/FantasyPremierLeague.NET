@@ -65,6 +65,8 @@ internal sealed class FplAuthenticationManager : IFplAuthenticationManager
             {
                 CurrentManager = saved;
                 await LoadDetailsIfRequestedAsync(saved, includeDetails, cancellationToken);
+                if (includeDetails)
+                    await _managerStore.SaveAsync(saved, cancellationToken);
                 return saved;
             }
 
