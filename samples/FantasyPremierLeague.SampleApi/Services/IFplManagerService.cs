@@ -79,5 +79,5 @@ public interface IFplManagerService
     Task<FplOperationResult> SubmitLineupAsync(int entryId, FplSubstitutionRequest request, CancellationToken cancellationToken = default);
 
     /// <summary>Submits transfers for a manager.</summary>
-    Task<FplOperationResult> SubmitTransfersAsync(FplTransferRequest request, CancellationToken cancellationToken = default);
+    Task SubmitTransfersAsync(FplTransferRequest request, CancellationToken cancellationToken = default);
 }

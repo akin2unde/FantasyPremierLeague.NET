@@ -47,15 +47,16 @@ public sealed class FplHttpClient
     /// <summary>
     /// Sends an authenticated POST request and deserializes the response.
     /// </summary>
-    public Task<T> PostAuthenticatedAsync<TBody, T>(string path, TBody body, CancellationToken cancellationToken) =>
-        SendAsync<T>(HttpMethod.Post, path, body, true, cancellationToken);
+    public Task<T> PostAuthenticatedAsync<TBody, T>(string path, TBody body, CancellationToken cancellationToken, bool allowEmptySuccess = false) =>
+        SendAsync<T>(HttpMethod.Post, path, body, true, cancellationToken, allowEmptySuccess);
 
     private async Task<T> SendAsync<T>(
         HttpMethod method,
         string path,
         object? body,
         bool authenticated,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken,
+        bool allowEmptySuccess = false)
     {
         using var response = await SendOnceAsync(method, path, body, authenticated, cancellationToken);
         if (authenticated && response.StatusCode == HttpStatusCode.Unauthorized)
@@ -63,9 +64,9 @@ public sealed class FplHttpClient
             var refreshedToken = await _authenticationManager.RefreshCurrentAsync(cancellationToken);
             using var retryResponse = await SendOnceAsync(
                 method, path, body, authenticated, cancellationToken, refreshedToken);
-            return await ReadResponseAsync<T>(retryResponse, path, cancellationToken);
+            return await ReadResponseAsync<T>(retryResponse, path, cancellationToken, allowEmptySuccess);
         }
-        return await ReadResponseAsync<T>(response, path, cancellationToken);
+        return await ReadResponseAsync<T>(response, path, cancellationToken, allowEmptySuccess);
     }
 
     private async Task<HttpResponseMessage> SendOnceAsync(
@@ -92,7 +93,9 @@ public sealed class FplHttpClient
     private async Task<T> ReadResponseAsync<T>(
         HttpResponseMessage response,
         string path,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken,
+        bool allowEmptySuccess
+        )
     {
         if (!response.IsSuccessStatusCode)
         {
@@ -124,18 +127,28 @@ public sealed class FplHttpClient
                 path,
                 _options.ExposeDetailedErrors ? responseBody : null);
         }
+        var body = await response.Content.ReadAsStringAsync(cancellationToken);
+
+        if (string.IsNullOrWhiteSpace(body))
+        {
+            if (allowEmptySuccess)
+                return default!;
+
+            throw new FplException(
+                $"FPL returned an empty response for '{path}'.");
+        }
+
         try
         {
-            return await response.Content.ReadFromJsonAsync<T>(JsonOptions, cancellationToken) ?? throw new FplException($"FPL returned an empty response for '{path}'.");
-
+            return JsonSerializer.Deserialize<T>(body, JsonOptions)
+                ?? throw new FplException(
+                    $"FPL returned an empty response for '{path}'.");
         }
         catch (JsonException ex)
         {
             var message = $"FPL returned invalid JSON for '{path}'.";
             if (_options.ExposeDetailedErrors)
-            {
                 message += $" {ex.Message}";
-            }
 
             throw new FplException(
                 message,
@@ -143,5 +156,8 @@ public sealed class FplHttpClient
                 path,
                 innerException: ex);
         }
+
     }
+
+
 }

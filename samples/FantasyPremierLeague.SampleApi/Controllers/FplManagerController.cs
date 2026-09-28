@@ -152,6 +152,9 @@ public sealed class FplManagerController : ControllerBase
 
     /// <summary>Submits transfers for the manager identified by the request's entry value.</summary>
     [HttpPost("transfers")]
-    public async Task<IActionResult> SubmitTransfers(FplTransferRequest request, CancellationToken cancellationToken) =>
-        Ok(await _service.SubmitTransfersAsync(request, cancellationToken));
+    public async Task SubmitTransfers(FplTransferRequest request, CancellationToken cancellationToken)
+    {
+        await _service.SubmitTransfersAsync(request, cancellationToken);
+        Ok();
+    }
 }

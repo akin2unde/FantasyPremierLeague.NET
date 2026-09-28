@@ -74,15 +74,15 @@ internal sealed class FplAuthenticationManager : IFplAuthenticationManager
             {
                 try
                 {
-                    Console.WriteLine("About to enter refersh");
+                    // Console.WriteLine("About to enter refersh");
                     await RefreshManagerSessionAsync(saved, includeDetails, cancellationToken);
-                    Console.WriteLine("Refresh done");
+                    // Console.WriteLine("Refresh done");
 
                     return saved;
                 }
                 catch (FplAuthenticationException ex) when (!string.IsNullOrWhiteSpace(password))
                 {
-                    Console.WriteLine("Refresh Error");
+                    // Console.WriteLine("Refresh Error");
                     Console.WriteLine(ex.Message);
                     // The refresh token may have been revoked before its JWT
                     // expiration. Fall back to the configured login provider
