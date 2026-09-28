@@ -123,11 +123,11 @@ public sealed class FplManagerService : IFplManagerService
     }
 
     /// <inheritdoc />
-    public async Task<FplOperationResult> SubmitTransfersAsync(FplTransferRequest request, CancellationToken cancellationToken = default)
+    public async Task SubmitTransfersAsync(FplTransferRequest request, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(request);
         await SelectManagerAsync(request.Entry, cancellationToken);
-        return await _fplClient.Team.SubmitTransfersAsync(request, cancellationToken);
+        await _fplClient.Team.SubmitTransfersAsync(request, cancellationToken);
     }
 
     private async Task SelectManagerAsync(int entryId, CancellationToken cancellationToken)

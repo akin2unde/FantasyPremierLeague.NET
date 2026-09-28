@@ -23,11 +23,11 @@ public sealed class FplTransferItem
     /// Gets or sets the purchase price.
     /// </summary>
     [JsonPropertyName("purchase_price")]
-    public int PurchasePrice { get; set; }
+    public float PurchasePrice { get; set; }
 
     /// <summary>
     /// Gets or sets the selling price.
     /// </summary>
     [JsonPropertyName("selling_price")]
-    public int SellingPrice { get; set; }
+    public float SellingPrice { get; set; }
 }

@@ -40,7 +40,7 @@ public sealed class FplTeamClient
     /// Submits one or more player transfers and an optional chip.
     /// </summary>
 
-    public async Task<FplOperationResult> SubmitTransfersAsync(
+    public async Task SubmitTransfersAsync(
         FplTransferRequest request,
         CancellationToken cancellationToken = default)
     {
@@ -49,9 +49,9 @@ public sealed class FplTeamClient
         if (request.Event <= 0) throw new ArgumentOutOfRangeException(nameof(request.Event));
         if (request.Transfers.Count == 0) throw new ArgumentException("At least one transfer is required.", nameof(request));
 
-        var payload = await _http.PostAuthenticatedAsync<FplTransferRequest, JsonElement>(
-            FplEndpoints.Transfers, request, cancellationToken);
-        return new FplOperationResult { Payload = payload };
+        await _http.PostAuthenticatedAsync<FplTransferRequest, JsonElement>(
+           FplEndpoints.Transfers, request, cancellationToken, true);
+
     }
 
 
