@@ -41,6 +41,12 @@ public sealed class FplEntry
     /// <summary>
     /// Gets or sets the summary overall rank.
     /// </summary>
+    [JsonPropertyName("summary_event_rank")]
+    public int? SummaryGWRank { get; set; }
+
+    /// <summary>
+    /// Gets or sets the summary overall rank.
+    /// </summary>
     [JsonPropertyName("summary_overall_rank")]
     public int? SummaryOverallRank { get; set; }
 
